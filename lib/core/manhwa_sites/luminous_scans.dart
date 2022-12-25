@@ -1,4 +1,4 @@
-import 'package:intl/intl.dart';
+import 'package:manga_reader/core/utils.dart';
 import 'package:web_scraper/web_scraper.dart';
 
 import '../data_classes.dart';
@@ -34,7 +34,7 @@ class LuminousScans implements ManhwaSource {
       // ─── Get Title ───────────────────────────────────────
 
       final title =
-          _webScraper.getElementTitle('div#titlemove > h1.entry-title')[0];
+          _webScraper.getElementTitle('div#titlemove > h1.entry-title').first;
 
       // ─── Get Tags ────────────────────────────────────────
 
@@ -49,59 +49,22 @@ class LuminousScans implements ManhwaSource {
 
       // ─── Get Cover Url ───────────────────────────────────
 
-      final coverUrl = _webScraper.getElement('div.thumb > img', ['src'])[0]
-          ['attributes']['src'];
-
-      // ─── Get Followed By Count ───────────────────────────
-
-      // 1. get followed by text `Followed by x people`
-      // 2. remove the `Followed by ` and ` peoplw` from the string
-      // 3. parse the number from string to int
-      final followedByCount = int.parse(
-        _webScraper
-            .getElementTitle('div.info-left-margin > div.bmc')[0]
-            .replaceAll(RegExp(r'Followed by '), '')
-            .replaceAll(RegExp(r' people'), ''),
-      );
+      final coverUrl = _webScraper
+          .getElement('div.thumb > img', ['src']).first['attributes']['src'];
 
       // ─── Get Rating ──────────────────────────────────────
 
       // 1. get rating as string
       // 2. convert string to double
       final rating = double.parse(
-          _webScraper.getElementTitle('div.rating-prc > div.num')[0]);
+        _webScraper.getElementTitle('div.rating-prc > div.num').first,
+      );
 
       // ─── Get Status ──────────────────────────────────────
 
-      MangaStatus status;
-
-      // 1. get status
-      // 2. match status to relevant `MangaStatus` value
-      switch (_webScraper
-          .getElementTitle('div.tsinfo > div.imptdt > i')[0]
-          .toLowerCase()) {
-        case 'ongoing':
-          {
-            status = MangaStatus.ongoing;
-          }
-          break;
-        case 'completed':
-          {
-            status = MangaStatus.completed;
-          }
-          break;
-        case 'hiatus':
-          {
-            status = MangaStatus.hiatus;
-          }
-          break;
-
-        default:
-          {
-            status = MangaStatus.none;
-          }
-          break;
-      }
+      final status = MangaStatus.parse(
+        _webScraper.getElementTitle('div.tsinfo > div.imptdt > i').first,
+      );
 
       // ─── Get Year Released ───────────────────────────────
 
@@ -110,8 +73,9 @@ class LuminousScans implements ManhwaSource {
       // 3. parse it into `DateTime` object
       final dateReleased = DateTime.parse(
         _webScraper
-            .getElement('div.tsinfo > div.imptdt > i > time', ['datetime'])[0]
-                ['attributes']['datetime'].toString(),
+            .getElement('div.tsinfo > div.imptdt > i > time', ['datetime'])
+            .first['attributes']['datetime']
+            .toString(),
       );
 
       // ─── Get Chapters ────────────────────────────────────
@@ -123,25 +87,24 @@ class LuminousScans implements ManhwaSource {
       // 3. convert chapter number from string to double
       final chapterNumbers = _webScraper
           .getElementTitle(
-              'div#chapterlist > ul > li > div.chbox > div.eph-num > a > span.chapternum')
+        'div#chapterlist > ul > li > div.chbox > div.eph-num > a > span.chapternum',
+      )
           .map(
         (e) {
           try {
-            return double.parse(e.replaceAll(RegExp(r'Chapter '), ''));
+            return double.parse(extractChapterNumber(e));
           } catch (e) {
             return double.nan;
           }
         },
       ).toList();
 
-      // Create new date time formate
-      DateFormat format = DateFormat("MMMM dd, yyyy");
-
       // get chapter release date and convert them into `DateTime` objects
       final chapterReleasedOn = _webScraper
           .getElementTitle(
-              'div#chapterlist > ul > li > div.chbox > div.eph-num > a > span.chapterdate')
-          .map((e) => format.parse(e))
+            'div#chapterlist > ul > li > div.chbox > div.eph-num > a > span.chapterdate',
+          )
+          .map((e) => altDateFormat.parse(e))
           .toList();
 
       final chapterUrls = _webScraper
@@ -163,16 +126,12 @@ class LuminousScans implements ManhwaSource {
         );
       }
 
-      // reverese chapter to be in ascending order
-      chapters = chapters.reversed.toList();
-
       // ─── Return Mangadetails Object ──────────────────────
 
       return MangaDetails(
         title,
         description,
         coverUrl,
-        followedByCount,
         rating,
         status,
         dateReleased,
@@ -185,8 +144,9 @@ class LuminousScans implements ManhwaSource {
   }
 
   @override
-  Future<List<MangaSearchResult>> popular() async {
-    if (await _webScraper.loadWebPage('/series?status=&type=&order=popular')) {
+  Future<List<MangaSearchResult>> popular({int page = 1}) async {
+    if (await _webScraper
+        .loadWebPage('/series?status=&type=&order=popular&page=$page')) {
       // Get manga ruls and titles
       final anchorTag =
           _webScraper.getElement('div.bsx > a', ['href', 'title']);
@@ -215,11 +175,14 @@ class LuminousScans implements ManhwaSource {
       final latestChapterNumbers = _webScraper
           .getElementTitle('div.bsx > a > div.bigor > div.adds > div.epxs')
           .map(
-            (e) => double.parse(
-              e.replaceAll(RegExp(r'Chapter '), ''),
-            ),
-          )
-          .toList();
+        (e) {
+          final regExp = RegExp(r'[1-9]\d*(\.\d+)?');
+
+          final chapterNumber = regExp.firstMatch(e)?.group(0) ?? '';
+
+          return double.parse(chapterNumber);
+        },
+      ).toList();
 
       // Get Ratings
       final ratings = _webScraper
@@ -228,20 +191,21 @@ class LuminousScans implements ManhwaSource {
           .map((e) => double.parse(e))
           .toList();
 
-      List<MangaSearchResult> result = [];
+      List<MangaSearchResult> results = [];
 
       for (int i = 0; i < mangaUrls.length; i++) {
-        result.add(
+        results.add(
           MangaSearchResult(
             mangaUrls[i],
             mangaTitles[i],
             latestChapterNumbers[i],
             ratings[i],
             coverUrls[i],
+            MangaStatus.none,
           ),
         );
       }
-      return result;
+      return results;
     }
 
     return [];
@@ -281,7 +245,7 @@ class LuminousScans implements ManhwaSource {
           .getElementTitle('div.bsx > a > div.bigor > div.adds > div.epxs')
           .map(
             (e) => double.parse(
-              e.replaceAll(RegExp(r'Chapter '), ''),
+              extractChapterNumber(e),
             ),
           )
           .toList();
@@ -293,19 +257,22 @@ class LuminousScans implements ManhwaSource {
           .map((e) => double.parse(e))
           .toList();
 
-      List<MangaSearchResult> result = [];
+      List<MangaSearchResult> results = [];
 
       for (int i = 0; i < mangaUrls.length; i++) {
-        result.add(
+        results.add(
           MangaSearchResult(
             mangaUrls[i],
             mangaTitles[i],
             latestChapterNumbers[i],
             ratings[i],
             coverUrls[i],
+            MangaStatus.none,
           ),
         );
       }
+
+      return results;
     }
 
     return [];

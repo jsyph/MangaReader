@@ -12,21 +12,15 @@ class MangaChapterData {
     this.releasedOn,
     this.chapterUrl,
   );
-}
 
-/// Contains manga status
-///
-/// The status can be:
-/// - completed
-/// - ongoing
-/// - hiatus
-/// - cancelled
-enum MangaStatus {
-  completed,
-  ongoing,
-  hiatus,
-  cancelled,
-  none,
+  @override
+  String toString() {
+    return '''MangaChapterData(
+      chapterNumber: $chapterNumber,\n
+    releasedOn: $releasedOn,\n
+    chapterUrl: $chapterUrl,\n
+    )''';
+  }
 }
 
 /// Conatins the manga details:
@@ -42,22 +36,18 @@ class MangaDetails {
   final String title;
   final String description;
   final String coverUrl;
-
   final MangaStatus status;
-
   final double rating;
-  final int followedByCount;
   final DateTime releasedAt;
-
-  /// sorted in ascending order
-  final List<MangaChapterData> chapters;
   final List<String> tags;
+
+  /// sorted in descending order
+  final List<MangaChapterData> chapters;
 
   MangaDetails(
     this.title,
     this.description,
     this.coverUrl,
-    this.followedByCount,
     this.rating,
     this.status,
     this.releasedAt,
@@ -65,34 +55,32 @@ class MangaDetails {
     this.tags,
   );
 
-  /// Returns an empty MangaDetails object
-  static MangaDetails empty() {
-    return MangaDetails(
-      '',
-      '',
-      '',
-      0,
-      0.0,
-      MangaStatus.none,
-      DateTime.now(),
-      [],
-      [],
-    );
-  }
-
   @override
   String toString() {
     return '''MangaDetails(\n
     title: $title,\n
     description: `$description`,\n
     coverUrl: $coverUrl,\n
-    followedByCount: $followedByCount,\n
     rating: $rating,\n
     status: $status,\n
     releasedAt: $releasedAt,\n
-    number of chapters: ${chapters.length},\n
+    chapters: $chapters,\n
     tags: $tags,\n
     )''';
+  }
+
+  /// Returns an empty MangaDetails object
+  static MangaDetails empty() {
+    return MangaDetails(
+      '',
+      '',
+      '',
+      0.0,
+      MangaStatus.none,
+      DateTime.now(),
+      [],
+      [],
+    );
   }
 }
 
@@ -110,6 +98,7 @@ class MangaSearchResult {
   final double latestChapterNumber;
   final double rating;
   final String mangaUrl;
+  final MangaStatus status;
 
   MangaSearchResult(
     this.coverUrl,
@@ -117,7 +106,51 @@ class MangaSearchResult {
     this.latestChapterNumber,
     this.rating,
     this.mangaUrl,
+    this.status,
   );
+}
+
+/// Contains manga status
+///
+/// The status can be:
+/// - completed
+/// - ongoing
+/// - hiatus
+/// - cancelled
+enum MangaStatus {
+  completed,
+  ongoing,
+  hiatus,
+  cancelled,
+  none;
+
+  static MangaStatus parse(String string) {
+    final lowerCaseString = string.toLowerCase();
+
+    switch (lowerCaseString) {
+      case 'completed':
+        {
+          return MangaStatus.completed;
+        }
+      case 'ongoing':
+        {
+          return MangaStatus.ongoing;
+        }
+      case 'hiatus':
+        {
+          return MangaStatus.hiatus;
+        }
+      case 'cancelled':
+        {
+          return MangaStatus.completed;
+        }
+
+      default:
+        {
+          return MangaStatus.none;
+        }
+    }
+  }
 }
 
 /// Base class that all manhwa sources must implement
@@ -133,7 +166,9 @@ abstract class ManhwaSource {
   }
 
   /// Gets all popular manga on manhwa site
-  Future<List<MangaSearchResult>> popular() async {
+  ///
+  ///  __page__ (int): defaults to 1
+  Future<List<MangaSearchResult>> popular({int page = 1}) async {
     throw UnimplementedError();
   }
 

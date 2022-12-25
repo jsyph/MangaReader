@@ -68,10 +68,10 @@ class _MainWidgetState extends State<MainWidget> {
           ),
           BottomNavigationBarItem(
             icon: Icon(
-              Icons.search,
+              Icons.travel_explore,
               color: Colors.black,
             ),
-            label: 'Search',
+            label: 'Explore',
           ),
           BottomNavigationBarItem(
             icon: Icon(
