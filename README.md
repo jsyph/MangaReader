@@ -3,10 +3,10 @@
 ## Sources:
 - ### Normal webscraping:
 
-  - https://luminousscans.com/
-  - https://flamescans.org/ygd/
-  - https://cosmicscans.com/
-  - https://asura.gg/
+  - https://luminousscans.com/ ✔️
+  - https://flamescans.org/ygd/ ✔️
+  - https://cosmicscans.com/ ✔️
+  - https://asura.gg/ ✔️
   - https://realmscans.com/
   - https://reaperscans.com/
 
