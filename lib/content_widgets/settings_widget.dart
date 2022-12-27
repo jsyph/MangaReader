@@ -10,6 +10,6 @@ class SettingsWidget extends StatefulWidget {
 class _SettingsWidgetState extends State<SettingsWidget> {
   @override
   Widget build(BuildContext context) {
-    return Text('Settings page');
+    return Center(child: Text('Settings page'));
   }
 }

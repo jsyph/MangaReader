@@ -10,6 +10,6 @@ class LibraryWidget extends StatefulWidget {
 class _LibraryWidgetState extends State<LibraryWidget> {
   @override
   Widget build(BuildContext context) {
-    return Text('Library page');
+    return Center(child: Text('Library page'));
   }
 }

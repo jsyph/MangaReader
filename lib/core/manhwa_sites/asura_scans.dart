@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:manga_reader/core/utils.dart';
 import 'package:web_scraper/web_scraper.dart';
 
@@ -41,7 +43,8 @@ class AsuraScans implements ManhwaSource {
 
   @override
   Future<MangaDetails> getMangaDetails(String mangaUrl) async {
-    final mangaRoute = mangaUrl.replaceAll(RegExp('https://asura.gg/'), '');
+    final mangaRoute = mangaUrl.replaceAll(RegExp('https://www.asurascans.com'), '');
+    log(mangaRoute);
 
     if (await _webScraper.loadWebPage(mangaRoute)) {
       // ─── Get Title ───────────────────────────────────────
@@ -94,7 +97,7 @@ class AsuraScans implements ManhwaSource {
       ).toList();
 
       final mangaChapterReleasedOns = _webScraper
-          .getElementTitle('spn.chapterdate')
+          .getElementTitle('span.chapterdate')
           .map(
             (e) => altDateFormat.parse(e),
           )
@@ -141,7 +144,7 @@ class AsuraScans implements ManhwaSource {
         .loadWebPage('/manga/?status=&type=&order=popular&page=$page')) {
       // ─── Get Cover Urls ──────────────────
       final resultCoverUrls = _webScraper
-          .getElement('div.dsx > a > div.limit > img', ['src'])
+          .getElement('div.bsx > a > div.limit > img.ts-post-image', ['src'])
           .map(
             (e) => e['attributes']['src'].toString(),
           )

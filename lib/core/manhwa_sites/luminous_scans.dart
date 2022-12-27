@@ -164,7 +164,7 @@ class LuminousScans implements ManhwaSource {
 
       // Get cover images
       final coverUrls = _webScraper
-          .getElement('div.bsx > a > div.limit > img.ts-post-image', ['src'])
+          .getElement('div.bsx > a > div.limit > img.wp-post-image', ['src'])
           .map(
             (e) => e['attributes']['src'].toString(),
           )
@@ -196,11 +196,11 @@ class LuminousScans implements ManhwaSource {
       for (int i = 0; i < mangaUrls.length; i++) {
         results.add(
           MangaSearchResult(
-            mangaUrls[i],
+            coverUrls[i],
             mangaTitles[i],
             latestChapterNumbers[i],
             ratings[i],
-            coverUrls[i],
+            mangaUrls[i],
             MangaStatus.none,
           ),
         );

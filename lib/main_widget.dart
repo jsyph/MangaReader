@@ -1,17 +1,25 @@
 import 'package:flutter/material.dart';
 import 'content_widgets/home_widget.dart';
 import 'content_widgets/library_widget.dart';
-import 'content_widgets/search_widget.dart';
+import 'content_widgets/explore_widget.dart';
 import 'content_widgets/settings_widget.dart';
+import 'package:bottom_navy_bar/bottom_navy_bar.dart';
 
 class MangaReaderApp extends StatelessWidget {
   const MangaReaderApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
+    return MaterialApp(
       title: 'Flutter Demo',
-      home: MainWidget(),
+      home: const MainWidget(),
+      theme: ThemeData(
+        brightness: Brightness.light,
+      ),
+      darkTheme: ThemeData(
+        brightness: Brightness.dark,
+      ),
+      themeMode: ThemeMode.system,
     );
   }
 }
@@ -28,8 +36,8 @@ class _MainWidgetState extends State<MainWidget> {
 
   static const List<Widget> _widgetOptions = <Widget>[
     HomeWidget(),
+    ExploreWidget(),
     LibraryWidget(),
-    SearchWidget(),
     SettingsWidget(),
   ];
 
@@ -44,46 +52,39 @@ class _MainWidgetState extends State<MainWidget> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Hello'),
-      ),
-      body: Center(
-        child: _widgetOptions.elementAt(_selectedIndex),
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
-            icon: Icon(
-              Icons.home,
-              color: Colors.black,
-            ),
-            label: 'Home',
+      body: _widgetOptions.elementAt(_selectedIndex),
+      bottomNavigationBar: BottomNavyBar(
+        selectedIndex: _selectedIndex,
+        showElevation: true,
+        itemCornerRadius: 24,
+        curve: Curves.easeInOutExpo,
+        onItemSelected: (index) => _onItemTapped(index),
+        items: <BottomNavyBarItem>[
+          BottomNavyBarItem(
+            icon: const Icon(Icons.home),
+            title: const Text('Home'),
+            activeColor: Colors.red,
+            textAlign: TextAlign.center,
           ),
-          BottomNavigationBarItem(
-            icon: Icon(
-              Icons.collections_bookmark,
-              color: Colors.black,
-            ),
-            label: 'Library',
+          BottomNavyBarItem(
+            icon: const Icon(Icons.travel_explore),
+            title: const Text('Explore'),
+            activeColor: Colors.purple,
+            textAlign: TextAlign.center,
           ),
-          BottomNavigationBarItem(
-            icon: Icon(
-              Icons.travel_explore,
-              color: Colors.black,
-            ),
-            label: 'Explore',
+          BottomNavyBarItem(
+            icon: const Icon(Icons.collections_bookmark),
+            title: const Text('Library'),
+            activeColor: Colors.blue,
+            textAlign: TextAlign.center,
           ),
-          BottomNavigationBarItem(
-            icon: Icon(
-              Icons.settings,
-              color: Colors.black,
-            ),
-            label: 'Settings',
+          BottomNavyBarItem(
+            icon: const Icon(Icons.settings),
+            title: const Text('Settings'),
+            activeColor: Colors.grey,
+            textAlign: TextAlign.center,
           ),
         ],
-        currentIndex: _selectedIndex,
-        selectedItemColor: Colors.blue,
-        onTap: _onItemTapped,
       ),
     );
   }

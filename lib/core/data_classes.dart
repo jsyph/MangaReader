@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 /// Contains the chapter data for each chapter in the manga:
 /// - __chapterNumber__: (*double*) number of chapter
 /// - __releasedOn__: (*DateTime*) date the chapter is released on
@@ -108,6 +110,41 @@ class MangaSearchResult {
     this.mangaUrl,
     this.status,
   );
+
+  // ─── For Storing Search Results ──────────────────────────────────────
+  factory MangaSearchResult.fromJson(Map<String, dynamic> jsonData) {
+    return MangaSearchResult(
+      jsonData['coverUrl'],
+      jsonData['title'],
+      double.parse(jsonData['latestChapterNumber']),
+      double.parse(jsonData['rating']),
+      jsonData['mangaUrl'],
+      MangaStatus.parse(jsonData['status'].toString().split('.').last),
+    );
+  }
+
+  static Map<String, dynamic> toMap(MangaSearchResult mangaSearchResult) {
+    return {
+      'coverUrl': mangaSearchResult.coverUrl,
+      'title': mangaSearchResult.title,
+      'latestChapterNumber': mangaSearchResult.latestChapterNumber.toString(),
+      'rating': mangaSearchResult.rating.toString(),
+      'mangaUrl': mangaSearchResult.mangaUrl,
+      'status': mangaSearchResult.status.toString(),
+    };
+  }
+
+  static String encode(List<MangaSearchResult> results) {
+    return json.encode(
+      results.map((result) => MangaSearchResult.toMap(result)).toList(),
+    );
+  }
+
+  static List<MangaSearchResult> decode(String results) {
+    return (json.decode(results) as List<dynamic>)
+        .map((item) => MangaSearchResult.fromJson(item))
+        .toList();
+  }
 }
 
 /// Contains manga status
