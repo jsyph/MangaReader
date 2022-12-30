@@ -5,12 +5,12 @@ import 'dart:convert';
 /// - __releasedOn__: (*DateTime*) date the chapter is released on
 /// - __chapterUrl__: (*String*) the url for the chapter
 class MangaChapterData {
-  final double chapterNumber;
+  final String chapterTitle;
   final DateTime releasedOn;
   final String chapterUrl;
 
   MangaChapterData(
-    this.chapterNumber,
+    this.chapterTitle,
     this.releasedOn,
     this.chapterUrl,
   );
@@ -18,7 +18,7 @@ class MangaChapterData {
   @override
   String toString() {
     return '''MangaChapterData(
-      chapterNumber: $chapterNumber,\n
+      chapterTitle: $chapterTitle,\n
     releasedOn: $releasedOn,\n
     chapterUrl: $chapterUrl,\n
     )''';
@@ -97,7 +97,7 @@ class MangaDetails {
 class MangaSearchResult {
   final String coverUrl;
   final String title;
-  final double latestChapterNumber;
+  final String latestChapterTitle;
   final double rating;
   final String mangaUrl;
   final MangaStatus status;
@@ -105,7 +105,7 @@ class MangaSearchResult {
   MangaSearchResult(
     this.coverUrl,
     this.title,
-    this.latestChapterNumber,
+    this.latestChapterTitle,
     this.rating,
     this.mangaUrl,
     this.status,
@@ -116,7 +116,7 @@ class MangaSearchResult {
     return MangaSearchResult(
       jsonData['coverUrl'],
       jsonData['title'],
-      double.parse(jsonData['latestChapterNumber']),
+      jsonData['latestChapterTitle'],
       double.parse(jsonData['rating']),
       jsonData['mangaUrl'],
       MangaStatus.parse(jsonData['status'].toString().split('.').last),
@@ -127,7 +127,7 @@ class MangaSearchResult {
     return {
       'coverUrl': mangaSearchResult.coverUrl,
       'title': mangaSearchResult.title,
-      'latestChapterNumber': mangaSearchResult.latestChapterNumber.toString(),
+      'latestChapterTitle': mangaSearchResult.latestChapterTitle,
       'rating': mangaSearchResult.rating.toString(),
       'mangaUrl': mangaSearchResult.mangaUrl,
       'status': mangaSearchResult.status.toString(),

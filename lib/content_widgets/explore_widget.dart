@@ -4,7 +4,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:manga_reader/content_widgets/common.dart';
-import 'package:manga_reader/content_widgets/display_manga_details.dart';
+import 'package:manga_reader/content_widgets/manga_details.dart';
 import 'package:manga_reader/core/core.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -31,7 +31,7 @@ class _ExploreWidgetState extends State<ExploreWidget> {
   @override
   Widget build(BuildContext context) {
     if (_popularManga.isEmpty) {
-      return scaffoldLoadingNoProgress;
+      return scaffoldLoadingNoProgressWidget;
     }
 
     return Scaffold(
@@ -84,201 +84,197 @@ class _ExploreWidgetState extends State<ExploreWidget> {
           )
         ],
       ),
-      body: GridView.count(
-        crossAxisCount: 2,
-        mainAxisSpacing: 5,
-        crossAxisSpacing: 5,
-        childAspectRatio: 0.55,
-        children: _popularManga.map(
-          (mangaSearchResult) {
-            // https://stackoverflow.com/a/57866878/14928208 👇
-            return Material(
-              child: Ink(
-                padding: const EdgeInsets.all(4.0),
-                decoration: BoxDecoration(
-                  border: Border.all(
-                    color: (Colors.purple[600])!,
+      body: Scrollbar(
+        child: GridView.count(
+          crossAxisCount: 2,
+          mainAxisSpacing: 5,
+          crossAxisSpacing: 5,
+          childAspectRatio: 0.50,
+          children: _popularManga.map(
+            (mangaSearchResult) {
+              // https://stackoverflow.com/a/57866878/14928208 👇
+              return Material(
+                child: Ink(
+                  padding: const EdgeInsets.all(4.0),
+                  decoration: BoxDecoration(
+                    border: Border.all(
+                      color: (Colors.purple[600])!,
+                    ),
+                    borderRadius: BorderRadius.circular(5),
                   ),
-                  borderRadius: BorderRadius.circular(5),
-                ),
-                child: InkWell(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => DisplayMangaDetails(
-                            mangaSearchResult.mangaUrl,
-                            _mangaSourcesData[
-                                _currentSelectedMangaSourceName]!),
-                      ),
-                    );
-                  },
-                  child: Column(
-                    children: [
-                      SizedBox(
-                        width: 200,
-                        height: 190,
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(5.0),
-                          child: CachedNetworkImage(
-                            imageUrl: mangaSearchResult.coverUrl,
-                            progressIndicatorBuilder:
-                                (context, url, downloadProgress) {
-                              return LinearProgressIndicator(
-                                backgroundColor: Colors.purple,
-                                color: Colors.purpleAccent,
-                                value: downloadProgress.progress,
-                              );
-                            },
-                            errorWidget: (context, url, error) {
-                              return const Icon(Icons.error);
-                            },
-                            fit: BoxFit.cover,
-                          ),
+                  child: InkWell(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => DisplayMangaDetails(
+                              mangaSearchResult.mangaUrl,
+                              _mangaSourcesData[
+                                  _currentSelectedMangaSourceName]!),
                         ),
-                      ),
-
-                      const Spacer(),
-
-                      Text(
-                        textAlign: TextAlign.center,
-                        mangaSearchResult.title,
-                        style: GoogleFonts.montserrat(),
-                      ),
-
-                      const Divider(),
-
-                      () {
-                        // If latestChapterNumber is not nan
-                        if (!mangaSearchResult.latestChapterNumber.isNaN) {
-                          // If chaper number == chapter number as int, then no decimal point is needed
-                          if (mangaSearchResult.latestChapterNumber ==
-                              mangaSearchResult.latestChapterNumber.toInt()) {
-                            return Text(
-                                'Latest: Chapter ${mangaSearchResult.latestChapterNumber.toInt()}',
-                                style: GoogleFonts.cairo());
-                          }
-
-                          // else decimal point is needed
-                          return Text(
-                              'Latest:  Chapter ${mangaSearchResult.latestChapterNumber}',
-                              style: GoogleFonts.cairo());
-                        } else {
-                          // is no manga status is found then output a zero size widget
-                          return const SizedBox.shrink();
-                        }
-                      }(),
-
-                      const Spacer(),
-
-                      // Rating | Status
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          // rating
-                          RichText(
-                            text: TextSpan(
-                              style: Theme.of(context).textTheme.bodyText1,
-                              children: [
-                                TextSpan(text: '${mangaSearchResult.rating}'),
-                                const WidgetSpan(
-                                  child: Padding(
-                                    padding: EdgeInsets.only(
-                                      left: 2.0,
-                                    ),
-                                    child: Icon(
-                                      Icons.star,
-                                      color: Colors.yellow,
-                                      size: 20,
-                                    ),
-                                  ),
-                                ),
-                              ],
+                      );
+                    },
+                    child: Column(
+                      children: [
+                        SizedBox(
+                          width: 200,
+                          height: 190,
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(5.0),
+                            child: CachedNetworkImage(
+                              imageUrl: mangaSearchResult.coverUrl,
+                              progressIndicatorBuilder:
+                                  (context, url, downloadProgress) {
+                                return LinearProgressIndicator(
+                                  backgroundColor: Colors.purple,
+                                  color: Colors.purpleAccent,
+                                  value: downloadProgress.progress,
+                                );
+                              },
+                              errorWidget: (context, url, error) {
+                                return const Icon(Icons.error);
+                              },
+                              fit: BoxFit.cover,
                             ),
                           ),
+                        ),
 
-                          // Figure out when to display status
-                          () {
-                            if (mangaSearchResult.status != MangaStatus.none) {
-                              Widget mangaStatusTextWidget = const Text('');
-                              switch (mangaSearchResult.status) {
-                                case MangaStatus.ongoing:
-                                  {
-                                    mangaStatusTextWidget = const Text(
-                                      'Ongoing',
-                                      style: TextStyle(
-                                        color: Colors.green,
-                                        fontStyle: FontStyle.italic,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    );
-                                    break;
-                                  }
-                                case MangaStatus.hiatus:
-                                  {
-                                    mangaStatusTextWidget = const Text(
-                                      'Hiatus',
-                                      style: TextStyle(
-                                        color: Colors.orange,
-                                        fontStyle: FontStyle.italic,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    );
-                                    break;
-                                  }
-                                case MangaStatus.completed:
-                                  {
-                                    mangaStatusTextWidget = const Text(
-                                      'Completed',
-                                      style: TextStyle(
-                                        color: Colors.blue,
-                                        fontStyle: FontStyle.italic,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    );
-                                    break;
-                                  }
-                                case MangaStatus.cancelled:
-                                  {
-                                    mangaStatusTextWidget = const Text(
-                                      'Cancelled',
-                                      style: TextStyle(
-                                        color: Colors.red,
-                                        fontStyle: FontStyle.italic,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    );
-                                    break;
-                                  }
+                        const Spacer(),
 
-                                default:
-                                  {
-                                    break;
-                                  }
-                              }
-                              return Row(
-                                children: [
-                                  const Padding(
-                                    padding: EdgeInsets.all(8.0),
-                                    child: Text('|'),
-                                  ),
-                                  mangaStatusTextWidget
-                                ],
-                              );
-                            }
+                        Text(
+                          textAlign: TextAlign.center,
+                          mangaSearchResult.title,
+                          style: GoogleFonts.montserrat(),
+                        ),
 
+                        const Divider(),
+
+                        () {
+                          // if latest chapter title == zero return the Text widget
+                          if (mangaSearchResult.latestChapterTitle.isNotEmpty) {
+                            return Text(
+                              textAlign: TextAlign.center,
+                              'Latest Chapter: ${mangaSearchResult.latestChapterTitle}',
+                              style: GoogleFonts.cairo(),
+                            );
+                          } else {
                             // is no manga status is found then output a zero size widget
                             return const SizedBox.shrink();
-                          }(),
-                        ],
-                      )
-                    ],
+                          }
+                        }(),
+
+                        const Spacer(),
+
+                        // Rating | Status
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            // rating
+                            RichText(
+                              text: TextSpan(
+                                style: Theme.of(context).textTheme.bodyText1,
+                                children: [
+                                  TextSpan(text: '${mangaSearchResult.rating}'),
+                                  const WidgetSpan(
+                                    child: Padding(
+                                      padding: EdgeInsets.only(
+                                        left: 2.0,
+                                      ),
+                                      child: Icon(
+                                        Icons.star,
+                                        color: Colors.yellow,
+                                        size: 20,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+
+                            // Figure out when to display status
+                            () {
+                              if (mangaSearchResult.status !=
+                                  MangaStatus.none) {
+                                Widget mangaStatusTextWidget = const Text('');
+                                switch (mangaSearchResult.status) {
+                                  case MangaStatus.ongoing:
+                                    {
+                                      mangaStatusTextWidget = const Text(
+                                        'Ongoing',
+                                        style: TextStyle(
+                                          color: Colors.green,
+                                          fontStyle: FontStyle.italic,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      );
+                                      break;
+                                    }
+                                  case MangaStatus.hiatus:
+                                    {
+                                      mangaStatusTextWidget = const Text(
+                                        'Hiatus',
+                                        style: TextStyle(
+                                          color: Colors.orange,
+                                          fontStyle: FontStyle.italic,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      );
+                                      break;
+                                    }
+                                  case MangaStatus.completed:
+                                    {
+                                      mangaStatusTextWidget = const Text(
+                                        'Completed',
+                                        style: TextStyle(
+                                          color: Colors.blue,
+                                          fontStyle: FontStyle.italic,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      );
+                                      break;
+                                    }
+                                  case MangaStatus.cancelled:
+                                    {
+                                      mangaStatusTextWidget = const Text(
+                                        'Cancelled',
+                                        style: TextStyle(
+                                          color: Colors.red,
+                                          fontStyle: FontStyle.italic,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      );
+                                      break;
+                                    }
+
+                                  default:
+                                    {
+                                      break;
+                                    }
+                                }
+                                return Row(
+                                  children: [
+                                    const Padding(
+                                      padding: EdgeInsets.all(8.0),
+                                      child: Text('|'),
+                                    ),
+                                    mangaStatusTextWidget
+                                  ],
+                                );
+                              }
+
+                              // is no manga status is found then output a zero size widget
+                              return const SizedBox.shrink();
+                            }(),
+                          ],
+                        )
+                      ],
+                    ),
                   ),
                 ),
-              ),
-            );
-          },
-        ).toList(),
+              );
+            },
+          ).toList(),
+        ),
       ),
     );
   }

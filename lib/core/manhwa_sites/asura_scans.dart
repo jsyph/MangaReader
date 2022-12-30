@@ -3,14 +3,14 @@ import 'dart:developer';
 import 'package:manga_reader/core/utils.dart';
 import 'package:web_scraper/web_scraper.dart';
 
-import '../data_classes.dart';
+import '../core_types.dart';
 
 class AsuraScans implements ManhwaSource {
   final _webScraper = WebScraper('https://asura.gg');
 
   @override
   Future<List<String>> getChapterImages(String chapterUrl) async {
-    final chapterRoute = chapterUrl.replaceAll(RegExp('https://asura.gg'), '');
+    final chapterRoute = chapterUrl.replaceAll(RegExp('https://www.asurascans.com'), '');
 
     if (await _webScraper.loadWebPage(chapterRoute)) {
       List<String> allImages = _webScraper
@@ -43,7 +43,8 @@ class AsuraScans implements ManhwaSource {
 
   @override
   Future<MangaDetails> getMangaDetails(String mangaUrl) async {
-    final mangaRoute = mangaUrl.replaceAll(RegExp('https://www.asurascans.com'), '');
+    final mangaRoute =
+        mangaUrl.replaceAll(RegExp('https://www.asurascans.com'), '');
     log(mangaRoute);
 
     if (await _webScraper.loadWebPage(mangaRoute)) {
@@ -52,8 +53,9 @@ class AsuraScans implements ManhwaSource {
           _webScraper.getElementTitle('div.infox > h1.entry-title').first;
 
       // ─── Get Description ─────────────────────────────────
-      final mangaDescription =
-          _webScraper.getElementTitle('div.wd-full > div.entry-content').first;
+      final mangaDescription = removeExtraWhiteSpaces(
+        _webScraper.getElementTitle('div.wd-full > div.entry-content').first,
+      );
 
       // ─── Get Cover Url ───────────────────────────────────
       final mangaCoverUrl = _webScraper
@@ -85,16 +87,8 @@ class AsuraScans implements ManhwaSource {
       final mangaTags = _webScraper.getElementTitle('span.mgen > a');
 
       // ─── Get Chapters ────────────────────────────────────
-      final mangaChapterNumbers =
-          _webScraper.getElementTitle('span.chapternum').map(
-        (e) {
-          try {
-            return double.parse(extractChapterNumber(e));
-          } catch (error) {
-            return double.nan;
-          }
-        },
-      ).toList();
+      final mangaChapterTitles =
+          _webScraper.getElementTitle('span.chapternum').map((e) => removeChapterFromString(e)).toList();
 
       final mangaChapterReleasedOns = _webScraper
           .getElementTitle('span.chapterdate')
@@ -114,7 +108,7 @@ class AsuraScans implements ManhwaSource {
       for (var i = 0; i < mangaChapterUrls.length; i++) {
         mangaChapters.add(
           MangaChapterData(
-            mangaChapterNumbers[i],
+            mangaChapterTitles[i],
             mangaChapterReleasedOns[i],
             mangaChapterUrls[i],
           ),
@@ -154,16 +148,8 @@ class AsuraScans implements ManhwaSource {
       final resultTitles = _webScraper.getElementTitle('div.bigor > div.tt');
 
       // ─── Get Latest Chapter Numbers ──────
-      final resultLatestChapterNumbers =
-          _webScraper.getElementTitle('div.bigor > div.adds > div.epxs').map(
-        (e) {
-          try {
-            return double.parse(extractChapterNumber(e));
-          } catch (e) {
-            return double.nan;
-          }
-        },
-      ).toList();
+      final resultLatestChapterTitles =
+          _webScraper.getElementTitle('div.bigor > div.adds > div.epxs').map((e) => removeChapterFromString(e)).toList();
 
       // ─── Get Ratings ─────────────────────
       final resultRatings = _webScraper
@@ -190,7 +176,7 @@ class AsuraScans implements ManhwaSource {
           MangaSearchResult(
             resultCoverUrls[i],
             resultTitles[i],
-            resultLatestChapterNumbers[i],
+            resultLatestChapterTitles[i],
             resultRatings[i],
             resultMangaUrls[i],
             MangaStatus.none,
@@ -220,16 +206,8 @@ class AsuraScans implements ManhwaSource {
       final resultTitles = _webScraper.getElementTitle('div.bigor > div.tt');
 
       // ─── Get Latest Chapter Numbers ──────
-      final resultLatestChapterNumbers =
-          _webScraper.getElementTitle('div.bigor > div.adds > div.epxs').map(
-        (e) {
-          try {
-            return double.parse(extractChapterNumber(e));
-          } catch (e) {
-            return double.nan;
-          }
-        },
-      ).toList();
+      final resultLatestChapterTitles =
+          _webScraper.getElementTitle('div.bigor > div.adds > div.epxs').map((e) => removeChapterFromString(e)).toList();
 
       // ─── Get Ratings ─────────────────────
       final resultRatings = _webScraper
@@ -256,7 +234,7 @@ class AsuraScans implements ManhwaSource {
           MangaSearchResult(
             resultCoverUrls[i],
             resultTitles[i],
-            resultLatestChapterNumbers[i],
+            resultLatestChapterTitles[i],
             resultRatings[i],
             resultMangaUrls[i],
             MangaStatus.none,

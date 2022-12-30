@@ -1,7 +1,7 @@
 import 'package:manga_reader/core/utils.dart';
 import 'package:web_scraper/web_scraper.dart';
 
-import '../data_classes.dart';
+import '../core_types.dart';
 
 class FlameScans implements ManhwaSource {
   final _webScraper = WebScraper('https://flamescans.org');
@@ -39,7 +39,7 @@ class FlameScans implements ManhwaSource {
 
       // ─── Get Description ─────────────────────────────────
 
-      final mangaDescription = _webScraper
+      String mangaDescription = _webScraper
           .getElementTitle('div.summary > div.wd-full > div.entry-content > p')
           .first;
 
@@ -91,16 +91,8 @@ class FlameScans implements ManhwaSource {
       // ─── Get Chapters ────────────────────────────────────
 
       // Get all chapter numbers
-      final mangaChapterNumbers =
-          _webScraper.getElementTitle('span.chapternum').map(
-        (chapterText) {
-          try {
-            return double.parse(extractChapterNumber(chapterText));
-          } catch (error) {
-            return double.nan;
-          }
-        },
-      ).toList();
+      final mangaChapterTitless =
+          _webScraper.getElementTitle('span.chapternum').map((e) => removeChapterFromString(e)).toList();
 
       // Get all released on dates
       final mangaChapterReleasedOn = _webScraper
@@ -124,7 +116,7 @@ class FlameScans implements ManhwaSource {
       for (var i = 0; i < mangaChapterUrls.length; i++) {
         mangaChapters.add(
           MangaChapterData(
-            mangaChapterNumbers[i],
+            mangaChapterTitless[i],
             mangaChapterReleasedOn[i],
             mangaChapterUrls[i],
           ),
@@ -195,7 +187,7 @@ class FlameScans implements ManhwaSource {
           MangaSearchResult(
             resultCoverUrls[i],
             resultTitles[i],
-            double.nan,
+            '',
             resultRatings[i],
             resulMangaUrls[i],
             resultStatuses[i],
@@ -257,7 +249,7 @@ class FlameScans implements ManhwaSource {
           MangaSearchResult(
             resultCoverUrls[i],
             resultTitles[i],
-            double.nan,
+            '',
             resultRatings[i],
             resulMangaUrls[i],
             resultStatuses[i],

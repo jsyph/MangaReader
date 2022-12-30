@@ -1,7 +1,7 @@
 import 'package:manga_reader/core/utils.dart';
 import 'package:web_scraper/web_scraper.dart';
 
-import '../data_classes.dart';
+import '../core_types.dart';
 
 class LuminousScans implements ManhwaSource {
   final _webScraper = WebScraper('https://luminousscans.com');
@@ -85,19 +85,9 @@ class LuminousScans implements ManhwaSource {
       // 1. get chapter title `Chapter x`
       // 2. remove `Chapter `
       // 3. convert chapter number from string to double
-      final chapterNumbers = _webScraper
-          .getElementTitle(
+      final chapterTitles = _webScraper.getElementTitle(
         'div#chapterlist > ul > li > div.chbox > div.eph-num > a > span.chapternum',
-      )
-          .map(
-        (e) {
-          try {
-            return double.parse(extractChapterNumber(e));
-          } catch (e) {
-            return double.nan;
-          }
-        },
-      ).toList();
+      ).map((e) => removeChapterFromString(e)).toList();
 
       // get chapter release date and convert them into `DateTime` objects
       final chapterReleasedOn = _webScraper
@@ -119,7 +109,7 @@ class LuminousScans implements ManhwaSource {
       for (var i = 0; i < chapterUrls.length; i++) {
         chapters.add(
           MangaChapterData(
-            chapterNumbers[i],
+            chapterTitles[i],
             chapterReleasedOn[i],
             chapterUrls[i],
           ),
@@ -172,17 +162,8 @@ class LuminousScans implements ManhwaSource {
 
       // Get latest Chapters
       // gets the `Chapter xx` text then removes the `Chapter `, then converts the number to double
-      final latestChapterNumbers = _webScraper
-          .getElementTitle('div.bsx > a > div.bigor > div.adds > div.epxs')
-          .map(
-        (e) {
-          final regExp = RegExp(r'[1-9]\d*(\.\d+)?');
-
-          final chapterNumber = regExp.firstMatch(e)?.group(0) ?? '';
-
-          return double.parse(chapterNumber);
-        },
-      ).toList();
+      final latestChapterTitles = _webScraper
+          .getElementTitle('div.bsx > a > div.bigor > div.adds > div.epxs').map((e) => removeChapterFromString(e)).toList();
 
       // Get Ratings
       final ratings = _webScraper
@@ -198,7 +179,7 @@ class LuminousScans implements ManhwaSource {
           MangaSearchResult(
             coverUrls[i],
             mangaTitles[i],
-            latestChapterNumbers[i],
+            latestChapterTitles[i],
             ratings[i],
             mangaUrls[i],
             MangaStatus.none,
@@ -241,14 +222,8 @@ class LuminousScans implements ManhwaSource {
 
       // Get latest Chapters
       // gets the `Chapter xx` text then removes the `Chapter `, then converts the number to double
-      final latestChapterNumbers = _webScraper
-          .getElementTitle('div.bsx > a > div.bigor > div.adds > div.epxs')
-          .map(
-            (e) => double.parse(
-              extractChapterNumber(e),
-            ),
-          )
-          .toList();
+      final latestChapterTitles = _webScraper
+          .getElementTitle('div.bsx > a > div.bigor > div.adds > div.epxs').map((e) => removeChapterFromString(e)).toList();
 
       // Get Ratings
       final ratings = _webScraper
@@ -264,7 +239,7 @@ class LuminousScans implements ManhwaSource {
           MangaSearchResult(
             mangaUrls[i],
             mangaTitles[i],
-            latestChapterNumbers[i],
+            latestChapterTitles[i],
             ratings[i],
             coverUrls[i],
             MangaStatus.none,

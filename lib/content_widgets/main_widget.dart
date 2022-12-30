@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'content_widgets/home_widget.dart';
-import 'content_widgets/library_widget.dart';
-import 'content_widgets/explore_widget.dart';
-import 'content_widgets/settings_widget.dart';
+import 'home_widget.dart';
+import 'library_widget.dart';
+import 'explore_widget.dart';
+import 'settings_widget.dart';
 import 'package:bottom_navy_bar/bottom_navy_bar.dart';
 
 class MangaReaderApp extends StatelessWidget {

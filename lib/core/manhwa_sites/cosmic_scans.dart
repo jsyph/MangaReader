@@ -1,7 +1,9 @@
+import 'dart:developer';
+
 import 'package:manga_reader/core/utils.dart';
 import 'package:web_scraper/web_scraper.dart';
 
-import '../data_classes.dart';
+import '../core_types.dart';
 
 class CosmicScans implements ManhwaSource {
   final _webScraper = WebScraper('https://cosmicscans.com');
@@ -33,9 +35,18 @@ class CosmicScans implements ManhwaSource {
           _webScraper.getElementTitle('div.infox > h1.entry-title').first;
 
       // ─── Get Description ─────────────────────────────────
-      final mangaDescription = _webScraper
-          .getElementTitle('div.wd-full > div.entry-content > p')
-          .first;
+      String mangaDescription = 'No Description';
+
+      final descriptionElement =
+          _webScraper.getElementTitle('div.wd-full > div.entry-content > p');
+
+      if (descriptionElement.isNotEmpty) {
+        mangaDescription = descriptionElement.first;
+      }
+
+      log(mangaDescription);
+
+      mangaDescription = fixStringEncoding(mangaDescription);
 
       // ─── Get Cover Url ───────────────────────────────────
       final mangaCover = _webScraper
@@ -73,16 +84,8 @@ class CosmicScans implements ManhwaSource {
           )
           .toList();
 
-      final mangaChapterNumbers =
-          _webScraper.getElementTitle('span.chapternum').map(
-        (e) {
-          try {
-            return double.parse(extractChapterNumber(e));
-          } catch (error) {
-            return double.nan;
-          }
-        },
-      ).toList();
+      final mangaChapterTitles =
+          _webScraper.getElementTitle('span.chapternum').map((e) => removeChapterFromString(e)).toList();
 
       final mangaChapterDates = _webScraper
           .getElementTitle('span.chapterdate')
@@ -96,7 +99,7 @@ class CosmicScans implements ManhwaSource {
       for (var i = 0; i < mangaChapterUrls.length; i++) {
         mangaChapters.add(
           MangaChapterData(
-            mangaChapterNumbers[i],
+            mangaChapterTitles[i],
             mangaChapterDates[i],
             mangaChapterUrls[i],
           ),
@@ -148,16 +151,8 @@ class CosmicScans implements ManhwaSource {
           .toList();
 
       // ─── Get All Latest Chapters ─────────────────────────
-      final resultLatestChapterNumbers =
-          _webScraper.getElementTitle('div.epxs').map(
-        (e) {
-          try {
-            return double.parse(extractChapterNumber(e));
-          } catch (error) {
-            return double.nan;
-          }
-        },
-      ).toList();
+      final resultLatestChapterTitles =
+          _webScraper.getElementTitle('div.epxs').map((e) => removeChapterFromString(e)).toList();
 
       // ─── Get All Rating ──────────────────────────────────
       final resultRatings = _webScraper
@@ -175,7 +170,7 @@ class CosmicScans implements ManhwaSource {
           MangaSearchResult(
             resultCoverUrls[i],
             resultTitle[i],
-            resultLatestChapterNumbers[i],
+            resultLatestChapterTitles[i],
             resultRatings[i],
             resultMangaUrls[i],
             MangaStatus.none,
@@ -219,16 +214,8 @@ class CosmicScans implements ManhwaSource {
           .toList();
 
       // ─── Get All Latest Chapters ─────────────────────────
-      final resultLatestChapterNumbers =
-          _webScraper.getElementTitle('div.epxs').map(
-        (e) {
-          try {
-            return double.parse(extractChapterNumber(e));
-          } catch (error) {
-            return double.nan;
-          }
-        },
-      ).toList();
+      final resultLatestChapterTitles =
+          _webScraper.getElementTitle('div.epxs').map((e) => removeChapterFromString(e)).toList();
 
       // ─── Get All Rating ──────────────────────────────────
       final resultRatings = _webScraper
@@ -246,7 +233,7 @@ class CosmicScans implements ManhwaSource {
           MangaSearchResult(
             resultCoverUrls[i],
             resultTitle[i],
-            resultLatestChapterNumbers[i],
+            resultLatestChapterTitles[i],
             resultRatings[i],
             resultMangaUrls[i],
             MangaStatus.none,

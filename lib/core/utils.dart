@@ -1,11 +1,29 @@
+import 'dart:convert';
+import 'dart:developer';
+
 import 'package:intl/intl.dart';
 
-String extractChapterNumber(String text) {
-  final regExp = RegExp(r'[1-9]\d*(\.\d+)?');
+DateFormat altDateFormat = DateFormat("MMMM dd, yyyy");
 
-  final chapterNumber = regExp.firstMatch(text)?.group(0) ?? '';
+String removeExtraWhiteSpaces(String text) {
+  final cleanedText = text.trim().replaceAll(RegExp(r' \s+'), ' ');
 
-  return chapterNumber;
+  log(cleanedText);
+
+  return cleanedText;
 }
 
-DateFormat altDateFormat = DateFormat("MMMM dd, yyyy");
+String fixStringEncoding(String text) {
+  final codeUnits = text.codeUnits;
+  try {
+    return const Utf8Decoder().convert(codeUnits);
+  } catch (e) {
+    log(text[209]);
+      final codeUnits = text.replaceAll('’', "'").replaceAll('‘', "'").replaceAll('…', '...').codeUnits;
+      return const Utf8Decoder().convert(codeUnits);
+  }
+}
+
+String removeChapterFromString(String text) {
+  return text.replaceAll('Chapter ', '');
+}
