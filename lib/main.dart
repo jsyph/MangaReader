@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'content_widgets/main_widget.dart';
-import 'core/manhwa_sites/luminous_scans.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {

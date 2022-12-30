@@ -208,7 +208,13 @@ class _DisplayMangaDetails extends State<DisplayMangaDetails> {
                     ),
                     const Divider(),
                     ReadMoreText(
-                      mangaDetails.description,
+                      () {
+                        if (mangaDetails.description == null) {
+                          return 'No Description';
+                        }
+
+                        return mangaDetails.description!;
+                      }(),
                       textAlign: TextAlign.justify,
                       trimCollapsedText: ' Show More',
                       trimExpandedText: ' Show Less',

@@ -1,6 +1,7 @@
 import 'dart:developer';
 
 import 'package:manga_reader/core/utils.dart';
+import 'package:manga_reader/core/webscraper_extension.dart';
 import 'package:web_scraper/web_scraper.dart';
 
 import '../core_types.dart';
@@ -12,13 +13,10 @@ class CosmicScans implements ManhwaSource {
   Future<List<String>> getChapterImages(String chapterUrl) async {
     final chapterRoute =
         chapterUrl.replaceAll(RegExp(r'https://cosmicscans.com'), '');
-    if (await _webScraper.loadWebPage(chapterRoute)) {
-      final allImages = _webScraper
-          .getElement('img.alignnone.size-full', ['src'])
-          .map((e) => e['attributes']['src'].toString())
-          .toList();
 
-      return allImages;
+    if (await _webScraper.loadWebPage(chapterRoute)) {
+      return _webScraper.getElementAttributeUnwrapString(
+          'img.alignnone.size-full', 'src');
     }
 
     return [];
@@ -32,60 +30,53 @@ class CosmicScans implements ManhwaSource {
     if (await _webScraper.loadWebPage(mangaRoute)) {
       // ─── Get Titles ──────────────────────────────────────
       final mangaTitle =
-          _webScraper.getElementTitle('div.infox > h1.entry-title').first;
+          _webScraper.getFirstElementTitle('div.infox > h1.entry-title');
 
       // ─── Get Description ─────────────────────────────────
-      String mangaDescription = 'No Description';
+      String? mangaDescription;
 
       final descriptionElement =
-          _webScraper.getElementTitle('div.wd-full > div.entry-content > p');
+          _webScraper.getFirstElementTitle('div.wd-full > div.entry-content > p');
 
       if (descriptionElement.isNotEmpty) {
-        mangaDescription = descriptionElement.first;
+        mangaDescription = descriptionElement;
+        mangaDescription = fixStringEncoding(mangaDescription);
       }
 
-      log(mangaDescription);
-
-      mangaDescription = fixStringEncoding(mangaDescription);
-
       // ─── Get Cover Url ───────────────────────────────────
-      final mangaCover = _webScraper
-          .getElement('div.thumbook > div.thumb > img', ['src'])
-          .first['attributes']['src']
-          .toString();
+      final mangaCover = _webScraper.getFirstElementAttribute(
+          'div.thumbook > div.thumb > img', 'src');
 
       // ─── Get Rating ──────────────────────────────────────
       final mangaRating = double.parse(
-          _webScraper.getElementTitle('div.rating-prc > div.num').first);
+          _webScraper.getFirstElementTitle('div.rating-prc > div.num'));
 
       // ─── Get Status ──────────────────────────────────────
       final mangaStatus = MangaStatus.parse(
-        _webScraper.getElementTitle('div.imptdt > i').first,
+        _webScraper.getFirstElementTitle('div.imptdt > i'),
       );
 
       // ─── Get Released At ─────────────────────────────────
       // gets the first time tag
       // gets the datetime attribute
       final mangaReleasedAt = DateTime.parse(
-        _webScraper.getElement(
-          'div.fmed > span > time',
-          ['datetime'],
-        ).first['attributes']['datetime'],
+        _webScraper.getFirstElementAttribute(
+            'div.fmed > span > time', 'datetime'),
       );
 
       // ─── Get Tags ────────────────────────────────────────
       final mangaTags = _webScraper.getElementTitle('span.mgen > a');
 
       // ─── Get Chapters ────────────────────────────────────
-      final mangaChapterUrls = _webScraper
-          .getElement('div.chbox > div.eph-num > a', ['href'])
+      final mangaChapterUrls = _webScraper.getElementAttributeUnwrapString(
+          'div.chbox > div.eph-num > a', 'href');
+
+      final mangaChapterTitles = _webScraper
+          .getElementTitle('span.chapternum')
           .map(
-            (e) => e['attributes']['href'].toString(),
+            (e) => removeChapterFromString(e),
           )
           .toList();
-
-      final mangaChapterTitles =
-          _webScraper.getElementTitle('span.chapternum').map((e) => removeChapterFromString(e)).toList();
 
       final mangaChapterDates = _webScraper
           .getElementTitle('span.chapterdate')
@@ -124,78 +115,23 @@ class CosmicScans implements ManhwaSource {
 
   @override
   Future<List<MangaSearchResult>> popular({int page = 1}) async {
-    if (await _webScraper
-        .loadWebPage('/manga/?status=&type=&order=popular&page=$page')) {
-      // ─── Get All Cover Urls ──────────────────────────────
-      final resultCoverUrls = _webScraper
-          .getElement('div.bsx > a > div.limit > img', ['src'])
-          .map(
-            (e) => e['attributes']['src'].toString(),
-          )
-          .toList();
+    final targetEndpoint = '/manga/?status=&type=&order=popular&page=$page';
 
-      // ─── Get All Titles And Manga Urls ───────────────────
-      final resultTitleAndMangaurls =
-          _webScraper.getElement('div.bsx > a', ['href', 'title']);
-
-      final resultTitle = resultTitleAndMangaurls
-          .map(
-            (e) => e['attributes']['title'].toString(),
-          )
-          .toList();
-
-      final resultMangaUrls = resultTitleAndMangaurls
-          .map(
-            (e) => e['attributes']['href'].toString(),
-          )
-          .toList();
-
-      // ─── Get All Latest Chapters ─────────────────────────
-      final resultLatestChapterTitles =
-          _webScraper.getElementTitle('div.epxs').map((e) => removeChapterFromString(e)).toList();
-
-      // ─── Get All Rating ──────────────────────────────────
-      final resultRatings = _webScraper
-          .getElementTitle(
-              'div.bigor > div.adds > div.rt > div.rating > div.numscore')
-          .map(
-            (e) => double.parse(e),
-          )
-          .toList();
-
-      // ─── Combine Into List Of MangaSearchResult ──────────
-      List<MangaSearchResult> results = [];
-      for (var i = 0; i < resultMangaUrls.length; i++) {
-        results.add(
-          MangaSearchResult(
-            resultCoverUrls[i],
-            resultTitle[i],
-            resultLatestChapterTitles[i],
-            resultRatings[i],
-            resultMangaUrls[i],
-            MangaStatus.none,
-          ),
-        );
-      }
-
-      return results;
-    }
-
-    return [];
+    return await _makeSearch(targetEndpoint);
   }
 
   @override
   Future<List<MangaSearchResult>> search(String query) async {
     final formattedQuery = query.replaceAll(RegExp(r' '), '+').toLowerCase();
 
-    if (await _webScraper.loadWebPage('/?s=$formattedQuery')) {
+    return await _makeSearch('/?s=$formattedQuery');
+  }
+
+  Future<List<MangaSearchResult>> _makeSearch(String targetEndpoint) async {
+    if (await _webScraper.loadWebPage(targetEndpoint)) {
       // ─── Get All Cover Urls ──────────────────────────────
-      final resultCoverUrls = _webScraper
-          .getElement('div.bsx > a > div.limit > img', ['src'])
-          .map(
-            (e) => e['attributes']['src'].toString(),
-          )
-          .toList();
+      final resultCoverUrls = _webScraper.getElementAttributeUnwrapString(
+          'div.bsx > a > div.limit > img', 'src');
 
       // ─── Get All Titles And Manga Urls ───────────────────
       final resultTitleAndMangaurls =
@@ -214,8 +150,10 @@ class CosmicScans implements ManhwaSource {
           .toList();
 
       // ─── Get All Latest Chapters ─────────────────────────
-      final resultLatestChapterTitles =
-          _webScraper.getElementTitle('div.epxs').map((e) => removeChapterFromString(e)).toList();
+      final resultLatestChapterTitles = _webScraper
+          .getElementTitle('div.epxs')
+          .map((e) => removeChapterFromString(e))
+          .toList();
 
       // ─── Get All Rating ──────────────────────────────────
       final resultRatings = _webScraper

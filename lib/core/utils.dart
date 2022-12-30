@@ -25,5 +25,5 @@ String fixStringEncoding(String text) {
 }
 
 String removeChapterFromString(String text) {
-  return text.replaceAll('Chapter ', '');
+  return text.replaceAll('\n', ' ').trim().replaceAll('Chapter ', '');
 }

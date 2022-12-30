@@ -36,7 +36,7 @@ class MangaChapterData {
 /// - __chapters__: (*List<MangaChapterData>*) chapters of the manga
 class MangaDetails {
   final String title;
-  final String description;
+  final String? description;
   final String coverUrl;
   final MangaStatus status;
   final double rating;
@@ -97,7 +97,7 @@ class MangaDetails {
 class MangaSearchResult {
   final String coverUrl;
   final String title;
-  final String latestChapterTitle;
+  final String? latestChapterTitle;
   final double rating;
   final String mangaUrl;
   final MangaStatus status;

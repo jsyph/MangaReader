@@ -151,7 +151,7 @@ class _ExploreWidgetState extends State<ExploreWidget> {
 
                         () {
                           // if latest chapter title == zero return the Text widget
-                          if (mangaSearchResult.latestChapterTitle.isNotEmpty) {
+                          if (mangaSearchResult.latestChapterTitle != null) {
                             return Text(
                               textAlign: TextAlign.center,
                               'Latest Chapter: ${mangaSearchResult.latestChapterTitle}',
