@@ -1,9 +1,17 @@
+import 'package:bottom_navy_bar/bottom_navy_bar.dart';
 import 'package:flutter/material.dart';
+
+import 'explore_widget/explore_widget.dart';
 import 'home_widget.dart';
 import 'library_widget.dart';
-import 'explore_widget.dart';
 import 'settings_widget.dart';
-import 'package:bottom_navy_bar/bottom_navy_bar.dart';
+
+class MainWidget extends StatefulWidget {
+  const MainWidget({super.key});
+
+  @override
+  State<MainWidget> createState() => _MainWidgetState();
+}
 
 class MangaReaderApp extends StatelessWidget {
   const MangaReaderApp({super.key});
@@ -24,41 +32,42 @@ class MangaReaderApp extends StatelessWidget {
   }
 }
 
-class MainWidget extends StatefulWidget {
-  const MainWidget({super.key});
-
-  @override
-  State<MainWidget> createState() => _MainWidgetState();
-}
-
 class _MainWidgetState extends State<MainWidget> {
-  int _selectedIndex = 0;
-
   static const List<Widget> _widgetOptions = <Widget>[
     HomeWidget(),
     ExploreWidget(),
     LibraryWidget(),
     SettingsWidget(),
   ];
+  int _currentIndex = 0;
 
-  void _onItemTapped(int index) {
-    setState(
-      () {
-        _selectedIndex = index;
-      },
-    );
-  }
+  final _pageController = PageController();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _widgetOptions.elementAt(_selectedIndex),
+      body: SizedBox.expand(
+        child: PageView(
+          controller: _pageController,
+          onPageChanged: (index) {
+            setState(() => _currentIndex = index);
+          },
+          children: _widgetOptions,
+        ),
+      ),
       bottomNavigationBar: BottomNavyBar(
-        selectedIndex: _selectedIndex,
+        selectedIndex: _currentIndex,
         showElevation: true,
         itemCornerRadius: 24,
         curve: Curves.easeInOutExpo,
-        onItemSelected: (index) => _onItemTapped(index),
+        onItemSelected: (index) {
+          setState(() => _currentIndex = index);
+          _pageController.animateToPage(
+            index,
+            duration: const Duration(milliseconds: 270),
+            curve: Curves.easeInOutExpo,
+          );
+        },
         items: <BottomNavyBarItem>[
           BottomNavyBarItem(
             icon: const Icon(Icons.home),
@@ -87,5 +96,16 @@ class _MainWidgetState extends State<MainWidget> {
         ],
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  @override
+  void initState() {
+    super.initState();
   }
 }

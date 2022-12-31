@@ -5,7 +5,10 @@ final scaffoldLoadingNoProgressWidget = Scaffold(
   appBar: AppBar(
     title: const Text('Loading...'),
   ),
-  body: SpinKitFoldingCube(
+  body: loadingWidget
+);
+
+final loadingWidget = SpinKitFoldingCube(
     duration: const Duration(milliseconds: 1000),
     itemBuilder: (BuildContext context, int index) {
       return DecoratedBox(
@@ -14,8 +17,7 @@ final scaffoldLoadingNoProgressWidget = Scaffold(
         ),
       );
     },
-  ),
-);
+  );
 
 const pipeSeperatorWidget = Padding(
   padding: EdgeInsets.symmetric(horizontal: 5.0),

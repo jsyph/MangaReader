@@ -3,11 +3,13 @@ import 'dart:developer';
 import 'package:manga_reader/core/utils.dart';
 import 'package:manga_reader/core/webscraper_extension.dart';
 import 'package:web_scraper/web_scraper.dart';
+import 'package:logging/logging.dart';
 
 import '../core_types.dart';
 
 class AsuraScans implements ManhwaSource {
   final _webScraper = WebScraper('https://asura.gg');
+  final logger = Logger('AsuraScans');
 
   @override
   Future<List<String>> getChapterImages(String chapterUrl) async {
@@ -33,6 +35,8 @@ class AsuraScans implements ManhwaSource {
         }
       }
 
+      logger.fine('Got ${allImages.length} images, Chapter Url: $chapterUrl');
+
       return allImages;
     }
 
@@ -43,7 +47,6 @@ class AsuraScans implements ManhwaSource {
   Future<MangaDetails> getMangaDetails(String mangaUrl) async {
     final mangaRoute =
         mangaUrl.replaceAll(RegExp('https://www.asurascans.com'), '');
-    log(mangaRoute);
 
     if (await _webScraper.loadWebPage(mangaRoute)) {
       // ─── Get Title ───────────────────────────────────────
@@ -108,6 +111,7 @@ class AsuraScans implements ManhwaSource {
 
       // ─── Combine Into Mangadetails ───────────────────────
 
+      logger.fine('Got MangaDetails for $mangaRoute');
       return MangaDetails(
         mangaTitle,
         mangaDescription,
@@ -120,6 +124,8 @@ class AsuraScans implements ManhwaSource {
       );
     }
 
+    logger.shout(
+        'getMangaDetails returns an empty MangaDetails, this should not happen.');
     return MangaDetails.empty();
   }
 
@@ -180,6 +186,8 @@ class AsuraScans implements ManhwaSource {
           ),
         );
       }
+
+      logger.fine('Got search results for $targetEndpoint');
 
       return results;
     }

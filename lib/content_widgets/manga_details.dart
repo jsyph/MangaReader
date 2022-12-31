@@ -277,16 +277,21 @@ class _DisplayMangaDetails extends State<DisplayMangaDetails> {
                           child: SizedBox(
                             height: 70,
                             child: ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.deepPurpleAccent,
-                              ),
-                              // TODO: Create function
-                              onPressed: () {},
-                              child: Text(
-                                'Read Latest Chapter ${mangaDetails.chapters.first.chapterTitle}',
-                                textAlign: TextAlign.center,
-                              ),
-                            ),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.deepPurpleAccent,
+                                ),
+                                // TODO: Create function
+                                onPressed: () {},
+                                child: () {
+                                  if (mangaDetails.chapters.isEmpty) {
+                                    return const Text('No Latest Chapter');
+                                  }
+
+                                  return Text(
+                                    'Read Latest Chapter ${mangaDetails.chapters.first.chapterTitle}',
+                                    textAlign: TextAlign.center,
+                                  );
+                                }()),
                           ),
                         ),
                       ],

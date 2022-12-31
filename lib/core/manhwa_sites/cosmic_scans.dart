@@ -36,10 +36,10 @@ class CosmicScans implements ManhwaSource {
       String? mangaDescription;
 
       final descriptionElement =
-          _webScraper.getFirstElementTitle('div.wd-full > div.entry-content > p');
+          _webScraper.getElementTitle('div.wd-full > div.entry-content > p');
 
       if (descriptionElement.isNotEmpty) {
-        mangaDescription = descriptionElement;
+        mangaDescription = descriptionElement.first;
         mangaDescription = fixStringEncoding(mangaDescription);
       }
 
