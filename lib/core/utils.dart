@@ -15,8 +15,13 @@ String fixStringEncoding(String text) {
   try {
     return const Utf8Decoder().convert(codeUnits);
   } catch (e) {
-      final codeUnits = text.replaceAll('’', "'").replaceAll('‘', "'").replaceAll('…', '...').codeUnits;
-      return const Utf8Decoder().convert(codeUnits);
+    final codeUnits = text
+        .replaceAll('’', "'")
+        .replaceAll('‘', "'")
+        .replaceAll('…', '...')
+        .replaceAll('“', '"')
+        .codeUnits;
+    return const Utf8Decoder().convert(codeUnits);
   }
 }
 

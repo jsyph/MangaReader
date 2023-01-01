@@ -67,6 +67,11 @@ class AsuraScans implements ManhwaSource {
         _webScraper.getFirstElementTitle('div.imptdt > i'),
       );
 
+      // ─── Get Manga Content Type ──────────────────────────
+      final mangaContentType = MangaContentType.parse(
+        _webScraper.getElementTitle('div.imptdt > i').last,
+      );
+
       // ─── Get Rating ──────────────────────────────────────
       final mangaRating = double.parse(
         _webScraper.getFirstElementTitle(
@@ -122,6 +127,7 @@ class AsuraScans implements ManhwaSource {
         mangaReleasedAt,
         mangaChapters,
         mangaTags,
+        mangaContentType
       );
     }
 
@@ -167,6 +173,14 @@ class AsuraScans implements ManhwaSource {
           )
           .toList();
 
+      // ─── Get Manga Content Types ─────────────────────────
+      final resultMangaContentTypes = _webScraper
+          .getElementTitle('span.type')
+          .map(
+            (e) => MangaContentType.parse(e),
+          )
+          .toList();
+
       // ─── Get Manga Urls ──────────────────
       final resultMangaUrls =
           _webScraper.getElementAttributeUnwrapString('div.bsx > a', 'href');
@@ -184,6 +198,7 @@ class AsuraScans implements ManhwaSource {
             resultRatings[i],
             resultMangaUrls[i],
             MangaStatus.none,
+            resultMangaContentTypes[i],
           ),
         );
       }

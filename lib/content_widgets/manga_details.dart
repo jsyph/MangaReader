@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:manga_reader/content_widgets/common.dart';
 import 'package:manga_reader/content_widgets/display_chapter.dart';
 import 'package:manga_reader/core/core.dart';
@@ -396,8 +397,10 @@ class _DisplayMangaDetails extends State<DisplayMangaDetails> {
                                   ),
                                   backgroundColor:
                                       Theme.of(context).backgroundColor,
-                                  child: const Icon(
-                                    Icons.compare_arrows,
+                                  child: const FaIcon(
+                                    FontAwesomeIcons.arrowRightArrowLeft,
+                                    size: 15,
+                                    color: Colors.white,
                                   ),
                                   onPressed: () {
                                     setState(

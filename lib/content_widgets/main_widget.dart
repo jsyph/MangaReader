@@ -1,5 +1,7 @@
 import 'package:bottom_navy_bar/bottom_navy_bar.dart';
 import 'package:flutter/material.dart';
+import 'package:manga_reader/content_widgets/search_widget.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import 'explore_widget/explore_widget.dart';
 import 'home_widget.dart';
@@ -36,8 +38,8 @@ class _MainWidgetState extends State<MainWidget> {
   static const List<Widget> _widgetOptions = <Widget>[
     HomeWidget(),
     ExploreWidget(),
+    SearchWidget(),
     LibraryWidget(),
-    SettingsWidget(),
   ];
   int _currentIndex = 0;
 
@@ -59,39 +61,39 @@ class _MainWidgetState extends State<MainWidget> {
         selectedIndex: _currentIndex,
         showElevation: true,
         itemCornerRadius: 24,
-        curve: Curves.easeInOutExpo,
-        animationDuration: const Duration(milliseconds: 270),
+        curve: Curves.linear,
+        animationDuration: const Duration(milliseconds: 160),
         onItemSelected: (index) {
           setState(() => _currentIndex = index);
           _pageController.animateToPage(
             index,
-            duration: const Duration(milliseconds: 270),
-            curve: Curves.easeInOutExpo,
+            duration: const Duration(milliseconds: 160),
+            curve: Curves.linear,
           );
         },
-        items: <BottomNavyBarItem>[
+        items: [
           BottomNavyBarItem(
             icon: const Icon(Icons.home),
             title: const Text('Home'),
-            activeColor: Colors.red,
+            activeColor: Colors.white,
             textAlign: TextAlign.center,
           ),
           BottomNavyBarItem(
-            icon: const Icon(Icons.travel_explore),
+            icon: const FaIcon(FontAwesomeIcons.globe),
             title: const Text('Explore'),
-            activeColor: Colors.purple,
+            activeColor: Colors.white,
+            textAlign: TextAlign.center,
+          ),
+          BottomNavyBarItem(
+            icon: const Icon(Icons.search),
+            title: const Text('Search'),
+            activeColor: Colors.white,
             textAlign: TextAlign.center,
           ),
           BottomNavyBarItem(
             icon: const Icon(Icons.collections_bookmark),
             title: const Text('Library'),
-            activeColor: Colors.blue,
-            textAlign: TextAlign.center,
-          ),
-          BottomNavyBarItem(
-            icon: const Icon(Icons.settings),
-            title: const Text('Settings'),
-            activeColor: Colors.grey,
+            activeColor: Colors.white,
             textAlign: TextAlign.center,
           ),
         ],

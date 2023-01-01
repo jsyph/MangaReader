@@ -1,5 +1,35 @@
 import 'dart:convert';
 
+enum MangaContentType {
+  manhwa,
+  manhua,
+  manga,
+  none;
+
+  factory MangaContentType.parse(String string) {
+    final lowerCaseString = string.toLowerCase();
+
+    switch (lowerCaseString) {
+      case 'manhwa':
+        {
+          return MangaContentType.manhwa;
+        }
+      case 'manhua':
+        {
+          return MangaContentType.manhua;
+        }
+      case 'manga':
+        {
+          return MangaContentType.manga;
+        }
+      default:
+        {
+          return MangaContentType.none;
+        }
+    }
+  }
+}
+
 /// Contains the chapter data for each chapter in the manga:
 /// - __chapterNumber__: (*double*) number of chapter
 /// - __releasedOn__: (*DateTime*) date the chapter is released on
@@ -42,20 +72,13 @@ class MangaDetails {
   final double rating;
   final DateTime releasedAt;
   final List<String> tags;
+  final MangaContentType contentType;
 
   /// sorted in descending order
   final List<MangaChapterData> chapters;
 
-  MangaDetails(
-    this.title,
-    this.description,
-    this.coverUrl,
-    this.rating,
-    this.status,
-    this.releasedAt,
-    this.chapters,
-    this.tags,
-  );
+  MangaDetails(this.title, this.description, this.coverUrl, this.rating,
+      this.status, this.releasedAt, this.chapters, this.tags, this.contentType);
 
   @override
   String toString() {
@@ -82,6 +105,7 @@ class MangaDetails {
       DateTime.now(),
       [],
       [],
+      MangaContentType.none,
     );
   }
 }
@@ -101,6 +125,7 @@ class MangaSearchResult {
   final double rating;
   final String mangaUrl;
   final MangaStatus status;
+  final MangaContentType? contentType;
 
   MangaSearchResult(
     this.coverUrl,
@@ -109,6 +134,7 @@ class MangaSearchResult {
     this.rating,
     this.mangaUrl,
     this.status,
+    this.contentType,
   );
 
   // ─── For Storing Search Results ──────────────────────────────────────
@@ -120,6 +146,19 @@ class MangaSearchResult {
       double.parse(jsonData['rating']),
       jsonData['mangaUrl'],
       MangaStatus.parse(jsonData['status'].toString().split('.').last),
+      MangaContentType.parse(jsonData['contentType'].toString().split('.').last),
+    );
+  }
+
+  static List<MangaSearchResult> decode(String results) {
+    return (json.decode(results) as List<dynamic>)
+        .map((item) => MangaSearchResult.fromJson(item))
+        .toList();
+  }
+
+  static String encode(List<MangaSearchResult> results) {
+    return json.encode(
+      results.map((result) => MangaSearchResult.toMap(result)).toList(),
     );
   }
 
@@ -131,19 +170,8 @@ class MangaSearchResult {
       'rating': mangaSearchResult.rating.toString(),
       'mangaUrl': mangaSearchResult.mangaUrl,
       'status': mangaSearchResult.status.toString(),
+      'contentType': mangaSearchResult.contentType.toString(),
     };
-  }
-
-  static String encode(List<MangaSearchResult> results) {
-    return json.encode(
-      results.map((result) => MangaSearchResult.toMap(result)).toList(),
-    );
-  }
-
-  static List<MangaSearchResult> decode(String results) {
-    return (json.decode(results) as List<dynamic>)
-        .map((item) => MangaSearchResult.fromJson(item))
-        .toList();
   }
 }
 
@@ -161,7 +189,7 @@ enum MangaStatus {
   cancelled,
   none;
 
-  static MangaStatus parse(String string) {
+  factory MangaStatus.parse(String string) {
     final lowerCaseString = string.toLowerCase();
 
     switch (lowerCaseString) {

@@ -56,6 +56,11 @@ class CosmicScans implements ManhwaSource {
         _webScraper.getFirstElementTitle('div.imptdt > i'),
       );
 
+      // ─── Get Manga Content Type ──────────────────────────
+      final mangaContentType = MangaContentType.parse(
+        _webScraper.getElementTitle('div.imptdt > i').last,
+      );
+
       // ─── Get Released At ─────────────────────────────────
       // gets the first time tag
       // gets the datetime attribute
@@ -107,6 +112,7 @@ class CosmicScans implements ManhwaSource {
         mangaReleasedAt,
         mangaChapters,
         mangaTags,
+        mangaContentType
       );
     }
 
@@ -164,6 +170,14 @@ class CosmicScans implements ManhwaSource {
           )
           .toList();
 
+      // ─── Get Manga Content Types ─────────────────────────
+      final resultMangaContentTypes = _webScraper
+          .getElementTitle('span.type')
+          .map(
+            (e) => MangaContentType.parse(e),
+          )
+          .toList();
+
       // ─── Combine Into List Of MangaSearchResult ──────────
       List<MangaSearchResult> results = [];
       for (var i = 0; i < resultMangaUrls.length; i++) {
@@ -175,6 +189,7 @@ class CosmicScans implements ManhwaSource {
             resultRatings[i],
             resultMangaUrls[i],
             MangaStatus.none,
+            resultMangaContentTypes[i],
           ),
         );
       }

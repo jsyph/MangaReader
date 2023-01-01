@@ -51,6 +51,12 @@ class FlameScans implements ManhwaSource {
         _webScraper.getElementTitle('div.tsinfo > div.imptdt > i')[1],
       );
 
+      // ─── Get Manga Content Type ──────────────────────────
+
+      final mangaContentType = MangaContentType.parse(
+        _webScraper.getFirstElementTitle('div.tsinfo > div.imptdt > i'),
+      );
+
       // ─── Get Rating ──────────────────────────────────────
 
       // Get Manga rating then parse it to double
@@ -119,6 +125,7 @@ class FlameScans implements ManhwaSource {
         mangaReleasedOn,
         mangaChapters,
         mangaTags,
+        mangaContentType
       );
     }
 
@@ -183,14 +190,8 @@ class FlameScans implements ManhwaSource {
       // combine into list of MangaSearchResult
       for (int i = 0; i < resulMangaUrls.length; i++) {
         results.add(
-          MangaSearchResult(
-            resultCoverUrls[i],
-            resultTitles[i],
-            null,
-            resultRatings[i],
-            resulMangaUrls[i],
-            resultStatuses[i],
-          ),
+          MangaSearchResult(resultCoverUrls[i], resultTitles[i], null,
+              resultRatings[i], resulMangaUrls[i], resultStatuses[i], null),
         );
       }
 

@@ -10,25 +10,19 @@ import '../manga_details.dart';
 import 'common.dart';
 
 class PopularTab extends StatefulWidget {
-  PopularTab({super.key});
+  const PopularTab({super.key});
 
-  final _state = _PopularTab();
-
-  void changePopularManga(String mangaSource) {
-    _state.changePopularManga(mangaSource);
+  void changePopularManga(BuildContext context, mangaSource) {
+    context.findAncestorStateOfType<_PopularTab>()!.changePopularManga(mangaSource);
   }
 
   @override
   // ignore: no_logic_in_create_state
-  State<PopularTab> createState() => _state;
+  State<PopularTab> createState() => _PopularTab();
 }
 
 class _PopularTab extends State<PopularTab>
     with AutomaticKeepAliveClientMixin<PopularTab> {
-// 👇 mixin stuff
-  @override
-  bool get wantKeepAlive => true;
-
   List<MangaSearchResult> _popularManga = [];
 
   final _scrollController = ScrollController();
@@ -37,6 +31,10 @@ class _PopularTab extends State<PopularTab>
       CurrentChapterNumberData.empty();
 
   String _mangaSourceName = mangaSourcesData.keys.first;
+
+  // 👇 mixin stuff
+  @override
+  bool get wantKeepAlive => true;
 
   @override
   Widget build(BuildContext context) {
@@ -48,8 +46,6 @@ class _PopularTab extends State<PopularTab>
 
     return Scrollbar(
       child: GridView.count(
-        key: const PageStorageKey<String>('popularTab'),
-        physics: const AlwaysScrollableScrollPhysics(),
         controller: _scrollController,
         crossAxisCount: 2,
         mainAxisSpacing: 5,
@@ -82,10 +78,12 @@ class _PopularTab extends State<PopularTab>
                     children: [
                       SizedBox(
                         width: 200,
-                        height: 190,
+                        height: 200,
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(5.0),
                           child: CachedNetworkImage(
+                            width: 200,
+                            height: 200,
                             imageUrl: mangaSearchResult.coverUrl,
                             progressIndicatorBuilder:
                                 (context, url, downloadProgress) {
@@ -129,7 +127,7 @@ class _PopularTab extends State<PopularTab>
 
                       const Spacer(),
 
-                      // Rating | Status
+                      // Rating | Status | type
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
@@ -147,7 +145,7 @@ class _PopularTab extends State<PopularTab>
                                     child: Icon(
                                       Icons.star,
                                       color: Colors.yellow,
-                                      size: 20,
+                                      size: 15,
                                     ),
                                   ),
                                 ),
@@ -228,6 +226,57 @@ class _PopularTab extends State<PopularTab>
                             // is no manga status is found then output a zero size widget
                             return const SizedBox.shrink();
                           }(),
+
+                          () {
+                            if (mangaSearchResult.contentType == null) {
+                              return const SizedBox.shrink();
+                            }
+
+                            late final Text mangaType;
+                            switch (mangaSearchResult.contentType) {
+                              case MangaContentType.manhwa:
+                                {
+                                  mangaType = const Text(
+                                    'Manhwa',
+                                    style: TextStyle(
+                                      color: Colors.pink,
+                                    ),
+                                  );
+                                  break;
+                                }
+
+                              case MangaContentType.manhua:
+                                {
+                                  mangaType = const Text(
+                                    'Manhua',
+                                    style: TextStyle(
+                                      color: Colors.green,
+                                    ),
+                                  );
+                                  break;
+                                }
+                              case MangaContentType.manga:
+                                {
+                                  mangaType = const Text(
+                                    'Manga',
+                                    style: TextStyle(
+                                      color: Colors.yellowAccent,
+                                    ),
+                                  );
+                                  break;
+                                }
+                              default:
+                                {
+                                  break;
+                                }
+                            }
+                            return Row(
+                              children: [
+                                pipeSeperatorWidget,
+                                mangaType,
+                              ],
+                            );
+                          }()
                         ],
                       )
                     ],
@@ -300,20 +349,6 @@ class _PopularTab extends State<PopularTab>
     );
   }
 
-  Future<void> _updatePopularManga(
-      String mangaSourceName, int pageNumber) async {
-    final internalPopularManga =
-        await mangaSourcesData[mangaSourceName]!.popular(page: pageNumber);
-
-    if (mounted) {
-      setState(
-        () {
-          _popularManga.addAll(internalPopularManga);
-        },
-      );
-    }
-  }
-
   /// is run only at startup
   void _getPopularManga() async {
     // get popular from internet or memory
@@ -327,6 +362,20 @@ class _PopularTab extends State<PopularTab>
       setState(
         () {
           _popularManga.addAll(results);
+        },
+      );
+    }
+  }
+
+  Future<void> _updatePopularManga(
+      String mangaSourceName, int pageNumber) async {
+    final internalPopularManga =
+        await mangaSourcesData[mangaSourceName]!.popular(page: pageNumber);
+
+    if (mounted) {
+      setState(
+        () {
+          _popularManga.addAll(internalPopularManga);
         },
       );
     }

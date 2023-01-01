@@ -61,6 +61,12 @@ class LuminousScans implements ManhwaSource {
         _webScraper.getFirstElementTitle('div.tsinfo > div.imptdt > i'),
       );
 
+      // ─── Get Type ────────────────────────────────────────
+
+      final mangaContentType = MangaContentType.parse(
+        _webScraper.getFirstElementTitle('div.tsinfo > div.imptdt > a')
+      );
+
       // ─── Get Year Released ───────────────────────────────
 
       // 1. get html datetime object
@@ -118,6 +124,7 @@ class LuminousScans implements ManhwaSource {
         dateReleased,
         chapters,
         tags,
+        mangaContentType
       );
     }
 
@@ -149,6 +156,7 @@ class LuminousScans implements ManhwaSource {
             (e) => e['attributes']['href'].toString(),
           )
           .toList();
+
       final mangaTitles = anchorTag
           .map(
             (e) => e['attributes']['title'].toString(),
@@ -173,18 +181,26 @@ class LuminousScans implements ManhwaSource {
           .map((e) => double.parse(e))
           .toList();
 
+      // Get manga content type
+      final mangaContentTypes =
+          _webScraper.getElementAttributeUnwrapString('span.type', 'class').map(
+        (e) {
+          return MangaContentType.parse(e.replaceAll('type ', ''));
+        },
+      ).toList();
+
       List<MangaSearchResult> results = [];
 
       for (int i = 0; i < mangaUrls.length; i++) {
         results.add(
           MangaSearchResult(
-            coverUrls[i],
-            mangaTitles[i],
-            latestChapterTitles[i],
-            ratings[i],
-            mangaUrls[i],
-            MangaStatus.none,
-          ),
+              coverUrls[i],
+              mangaTitles[i],
+              latestChapterTitles[i],
+              ratings[i],
+              mangaUrls[i],
+              MangaStatus.none,
+              mangaContentTypes[i]),
         );
       }
       return results;

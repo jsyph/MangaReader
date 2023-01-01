@@ -1,10 +1,10 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:manga_reader/content_widgets/common.dart';
 import 'package:manga_reader/content_widgets/explore_widget/common.dart';
 import 'package:manga_reader/content_widgets/explore_widget/popular_tab.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class ExploreWidget extends StatefulWidget {
   const ExploreWidget({super.key});
@@ -14,7 +14,9 @@ class ExploreWidget extends StatefulWidget {
 }
 
 class _ExploreWidgetState extends State<ExploreWidget>
-    with AutomaticKeepAliveClientMixin<ExploreWidget> {
+    with
+        AutomaticKeepAliveClientMixin<ExploreWidget>,
+        SingleTickerProviderStateMixin {
   // for mixin 👇
   @override
   bool get wantKeepAlive => true;
@@ -22,6 +24,8 @@ class _ExploreWidgetState extends State<ExploreWidget>
   String _currentSelectedMangaSourceName = '';
 
   final _popularTab = PopularTab();
+
+  late final TabController _tabController;
 
   @override
   Widget build(BuildContext context) {
@@ -31,105 +35,110 @@ class _ExploreWidgetState extends State<ExploreWidget>
       return scaffoldLoadingNoProgressWidget;
     }
 
-    return DefaultTabController(
-      length: 2,
-      child: Scaffold(
-        appBar: AppBar(
-          title: const Text('Current Source:'),
-          bottom: PreferredSize(
-            preferredSize: const Size.fromHeight(40),
-            child: TabBar(
-              tabs: [
-                Tab(
-                  child: RichText(
-                    text: const TextSpan(
-                      children: [
-                        TextSpan(
-                          text: "Popular",
-                        ),
-                        WidgetSpan(
-                          alignment: PlaceholderAlignment.baseline,
-                          baseline: TextBaseline.alphabetic,
-                          child: SizedBox(width: 10),
-                        ),
-                        WidgetSpan(
-                          child: Icon(Icons.trending_up, size: 16),
-                        ),
-                      ],
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Current Source:'),
+        bottom: TabBar(
+          controller: _tabController,
+          tabs: [
+            Tab(
+              child: RichText(
+                text: const TextSpan(
+                  children: [
+                    TextSpan(
+                      text: "Popular",
                     ),
-                  ),
-                ),
-                Tab(
-                  child: RichText(
-                    text: const TextSpan(
-                      children: [
-                        TextSpan(
-                          text: "Updates",
-                        ),
-                        WidgetSpan(
-                          alignment: PlaceholderAlignment.baseline,
-                          baseline: TextBaseline.alphabetic,
-                          child: SizedBox(width: 10),
-                        ),
-                        WidgetSpan(
-                          child: Icon(Icons.new_releases, size: 16),
-                        ),
-                      ],
+                    WidgetSpan(
+                      alignment: PlaceholderAlignment.baseline,
+                      baseline: TextBaseline.alphabetic,
+                      child: SizedBox(width: 10),
                     ),
-                  ),
+                    WidgetSpan(
+                      child: FaIcon(
+                        FontAwesomeIcons.fire,
+                        size: 16,
+                        color: Colors.redAccent,
+                      ),
+                    ),
+                  ],
                 ),
-              ],
+              ),
             ),
-          ),
-          actions: [
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-              color: Theme.of(context).appBarTheme.backgroundColor,
+            Tab(
+              child: RichText(
+                text: const TextSpan(
+                  children: [
+                    TextSpan(
+                      text: "Updates",
+                    ),
+                    WidgetSpan(
+                      alignment: PlaceholderAlignment.baseline,
+                      baseline: TextBaseline.alphabetic,
+                      child: SizedBox(width: 10),
+                    ),
+                    WidgetSpan(
+                      child: Icon(
+                        Icons.new_releases,
+                        size: 16,
+                        color: Colors.yellowAccent,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+            color: Theme.of(context).appBarTheme.backgroundColor,
 
-              // dropdown below..
-              child: DropdownButton<String>(
-                value: _currentSelectedMangaSourceName,
-                onChanged: (value) {
-                  if (value != null) {
-                    // 👇 Code to run when selected manga source is changed
-                    log(value);
-                    _changeSelectedMangaSourceName(value);
-                    _popularTab.changePopularManga(_currentSelectedMangaSourceName);
+            // dropdown below..
+            child: DropdownButton<String>(
+              value: _currentSelectedMangaSourceName,
+              onChanged: (value) {
+                if (value != null) {
+                  // 👇 Code to run when selected manga source is changed
+                  log(value);
+                  _changeSelectedMangaSourceName(value);
+                  _popularTab
+                      .changePopularManga(context, _currentSelectedMangaSourceName);
 
-                    // 👆 -------------------------------------------------
-                  }
-                },
-                items: mangaSourcesData.keys
-                    .map<DropdownMenuItem<String>>(
-                      (String value) => DropdownMenuItem<String>(
-                        value: value,
-                        child: Text(
-                          value,
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontStyle: FontStyle.italic,
-                          ),
+                  // 👆 -------------------------------------------------
+                }
+              },
+              items: mangaSourcesData.keys
+                  .map<DropdownMenuItem<String>>(
+                    (String value) => DropdownMenuItem<String>(
+                      value: value,
+                      child: Text(
+                        value,
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontStyle: FontStyle.italic,
                         ),
                       ),
-                    )
-                    .toList(),
+                    ),
+                  )
+                  .toList(),
 
-                // add extra sugar..
-                icon: const Icon(
-                  Icons.arrow_drop_down,
-                  color: Colors.black,
-                ),
-                underline: const SizedBox(),
+              // add extra sugar..
+              icon: const Icon(
+                Icons.arrow_drop_down,
+                color: Colors.black,
               ),
-            )
-          ],
-        ),
-        body: TabBarView(
-          children: [
-            _popularTab,
-            const Text('fuck'),
-          ],
-        ),
+              underline: const SizedBox(),
+            ),
+          )
+        ],
+      ),
+      body: TabBarView(
+        controller: _tabController,
+        children: [
+          _popularTab,
+          const Text('fuck'),
+        ],
       ),
     );
   }
@@ -139,6 +148,7 @@ class _ExploreWidgetState extends State<ExploreWidget>
     super.initState();
 
     _loadMangaSourceName();
+    _tabController = TabController(length: 2, vsync: this);
   }
 
   void _changeSelectedMangaSourceName(String mangaSourceName) async {
