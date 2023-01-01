@@ -60,6 +60,7 @@ class _MainWidgetState extends State<MainWidget> {
         showElevation: true,
         itemCornerRadius: 24,
         curve: Curves.easeInOutExpo,
+        animationDuration: const Duration(milliseconds: 270),
         onItemSelected: (index) {
           setState(() => _currentIndex = index);
           _pageController.animateToPage(

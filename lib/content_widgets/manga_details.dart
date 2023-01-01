@@ -306,69 +306,78 @@ class _DisplayMangaDetails extends State<DisplayMangaDetails> {
                         children: [
                           SizedBox(
                             height: 500,
-                            child: Scrollbar(
-                              child: GridView.count(
-                                primary: true,
-                                crossAxisCount: 2,
-                                shrinkWrap: true,
-                                mainAxisSpacing: 4.0,
-                                crossAxisSpacing: 4.0,
-                                padding: const EdgeInsets.all(4.0),
-                                children: mangaChapters.map(
-                                  (chapterData) {
-                                    return Material(
-                                      child: Ink(
-                                        child: InkWell(
-                                          // TODO: Create function
-                                          onTap: () {
-                                            Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                builder: (context) =>
-                                                    DisplayChapter(
-                                                  chapterData,
-                                                  widget._mangaSource,
-                                                ),
-                                              ),
-                                            );
-                                          },
-                                          child: Container(
-                                            decoration: BoxDecoration(
-                                              borderRadius:
-                                                  BorderRadius.circular(6.0),
-                                              border: Border.all(
-                                                width: 2.0,
-                                                color: Colors.pink,
-                                              ),
-                                            ),
-                                            child: Column(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.center,
-                                              children: [
-                                                Text(
-                                                  textAlign: TextAlign.center,
-                                                  'Chapter ${chapterData.chapterTitle}',
-                                                  style: const TextStyle(
-                                                    fontSize: 20,
-                                                    fontStyle: FontStyle.italic,
+                            child: () {
+                              // if there are no chapter found retern a text widget
+                              if (mangaDetails.chapters.isEmpty) {
+                                return const Center(
+                                  child: Text('Chapter List is Empty'),
+                                );
+                              }
+                              // else display chapters widget
+                              return Scrollbar(
+                                child: GridView.count(
+                                  primary: true,
+                                  crossAxisCount: 2,
+                                  shrinkWrap: true,
+                                  mainAxisSpacing: 4.0,
+                                  crossAxisSpacing: 4.0,
+                                  padding: const EdgeInsets.all(4.0),
+                                  children: mangaChapters.map(
+                                    (chapterData) {
+                                      return Material(
+                                        child: Ink(
+                                          child: InkWell(
+                                            onTap: () {
+                                              Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                  builder: (context) =>
+                                                      DisplayChapter(
+                                                    chapterData,
+                                                    widget._mangaSource,
                                                   ),
                                                 ),
-                                                const Divider(),
-                                                Text(
-                                                  altDateFormat.format(
-                                                    chapterData.releasedOn,
-                                                  ),
+                                              );
+                                            },
+                                            child: Container(
+                                              decoration: BoxDecoration(
+                                                borderRadius:
+                                                    BorderRadius.circular(6.0),
+                                                border: Border.all(
+                                                  width: 2.0,
+                                                  color: Colors.pink,
                                                 ),
-                                              ],
+                                              ),
+                                              child: Column(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.center,
+                                                children: [
+                                                  Text(
+                                                    textAlign: TextAlign.center,
+                                                    'Chapter ${chapterData.chapterTitle}',
+                                                    style: const TextStyle(
+                                                      fontSize: 20,
+                                                      fontStyle:
+                                                          FontStyle.italic,
+                                                    ),
+                                                  ),
+                                                  const Divider(),
+                                                  Text(
+                                                    altDateFormat.format(
+                                                      chapterData.releasedOn,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
                                             ),
                                           ),
                                         ),
-                                      ),
-                                    );
-                                  },
-                                ).toList(),
-                              ),
-                            ),
+                                      );
+                                    },
+                                  ).toList(),
+                                ),
+                              );
+                            }(),
                           ),
                           Align(
                             alignment: Alignment.topRight,

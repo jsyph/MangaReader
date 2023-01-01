@@ -1,13 +1,10 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
-import 'package:logging/logging.dart';
 import 'package:manga_reader/content_widgets/common.dart';
 import 'package:manga_reader/content_widgets/explore_widget/common.dart';
 import 'package:manga_reader/content_widgets/explore_widget/popular_tab.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
-import '../../styles.dart';
 
 class ExploreWidget extends StatefulWidget {
   const ExploreWidget({super.key});
@@ -18,21 +15,19 @@ class ExploreWidget extends StatefulWidget {
 
 class _ExploreWidgetState extends State<ExploreWidget>
     with AutomaticKeepAliveClientMixin<ExploreWidget> {
-  final logger = Logger('ExploreWidget');
+  // for mixin 👇
+  @override
+  bool get wantKeepAlive => true;
 
   String _currentSelectedMangaSourceName = '';
 
-  bool _readyToDisplay = false;
-
-  final _popularPanel = PopularTab();
-
-  @override
-  bool get wantKeepAlive => true;
+  final _popularTab = PopularTab();
 
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    if (!_readyToDisplay) {
+
+    if (_currentSelectedMangaSourceName.isEmpty) {
       return scaffoldLoadingNoProgressWidget;
     }
 
@@ -96,13 +91,12 @@ class _ExploreWidgetState extends State<ExploreWidget>
                 value: _currentSelectedMangaSourceName,
                 onChanged: (value) {
                   if (value != null) {
-                    _popularPanel.changeMangaSource(value);
-
+                    // 👇 Code to run when selected manga source is changed
+                    log(value);
                     _changeSelectedMangaSourceName(value);
+                    _popularTab.changePopularManga(_currentSelectedMangaSourceName);
 
-                    if (mounted) {
-                      logger.fine('');
-                    }
+                    // 👆 -------------------------------------------------
                   }
                 },
                 items: mangaSourcesData.keys
@@ -132,7 +126,7 @@ class _ExploreWidgetState extends State<ExploreWidget>
         ),
         body: TabBarView(
           children: [
-            PopularTab(),
+            _popularTab,
             const Text('fuck'),
           ],
         ),
@@ -144,15 +138,10 @@ class _ExploreWidgetState extends State<ExploreWidget>
   void initState() {
     super.initState();
 
-    _startup();
+    _loadMangaSourceName();
   }
 
   void _changeSelectedMangaSourceName(String mangaSourceName) async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-
-    await prefs.setString('selected_manga_source', mangaSourceName);
-    log('is mounted: $mounted');
-
     if (mounted) {
       setState(
         () {
@@ -162,25 +151,14 @@ class _ExploreWidgetState extends State<ExploreWidget>
     }
   }
 
-  void _startup() async {
+  void _loadMangaSourceName() async {
     // ─── Set Manga Source ────────────────────────────────────────
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
 
-    String? selctedManga = prefs.getString('selected_manga_source');
-
-    if (selctedManga == null) {
-      final value = mangaSourcesData.keys.first;
-      await prefs.setString(
-        'selected_manga_source',
-        value,
-      );
-      _currentSelectedMangaSourceName = value;
-    } else {
-      _currentSelectedMangaSourceName = selctedManga;
-    }
-
-    setState(() {
-      _readyToDisplay = true;
-    });
+    final value = mangaSourcesData.keys.first;
+    setState(
+      () {
+        _currentSelectedMangaSourceName = value;
+      },
+    );
   }
 }

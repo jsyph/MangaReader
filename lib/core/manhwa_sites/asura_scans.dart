@@ -108,6 +108,7 @@ class AsuraScans implements ManhwaSource {
           ),
         );
       }
+      log(mangaChapters.toString());
 
       // ─── Combine Into Mangadetails ───────────────────────
 

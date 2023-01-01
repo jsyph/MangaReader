@@ -1,8 +1,8 @@
+import 'dart:developer';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:logging/logging.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../core/core.dart';
 import '../common.dart';
@@ -10,12 +10,12 @@ import '../manga_details.dart';
 import 'common.dart';
 
 class PopularTab extends StatefulWidget {
-  final _state = _PopularTab();
-
   PopularTab({super.key});
 
-  Future<void> changeMangaSource(String sourceName) async {
-    _state.changePopularManga(sourceName);
+  final _state = _PopularTab();
+
+  void changePopularManga(String mangaSource) {
+    _state.changePopularManga(mangaSource);
   }
 
   @override
@@ -25,7 +25,9 @@ class PopularTab extends StatefulWidget {
 
 class _PopularTab extends State<PopularTab>
     with AutomaticKeepAliveClientMixin<PopularTab> {
-  final logger = Logger('PopularTabState');
+// 👇 mixin stuff
+  @override
+  bool get wantKeepAlive => true;
 
   List<MangaSearchResult> _popularManga = [];
 
@@ -34,14 +36,12 @@ class _PopularTab extends State<PopularTab>
   CurrentChapterNumberData _currentPageNumberData =
       CurrentChapterNumberData.empty();
 
-  @override
-  bool get wantKeepAlive => true;
-
-  String _selectedMangaSourceName = '';
+  String _mangaSourceName = mangaSourcesData.keys.first;
 
   @override
   Widget build(BuildContext context) {
     super.build(context);
+
     if (_popularManga.isEmpty) {
       return loadingWidget;
     }
@@ -74,7 +74,7 @@ class _PopularTab extends State<PopularTab>
                       MaterialPageRoute(
                         builder: (context) => DisplayMangaDetails(
                             mangaSearchResult.mangaUrl,
-                            mangaSourcesData[_selectedMangaSourceName]!),
+                            mangaSourcesData[_mangaSourceName]!),
                       ),
                     );
                   },
@@ -244,33 +244,41 @@ class _PopularTab extends State<PopularTab>
   void changePopularManga(String mangaSourceName) async {
     setState(
       () {
+        // make popular_manga to []
         _popularManga = [];
+        // reset CurrentChapterNumberData
         _currentPageNumberData = CurrentChapterNumberData.empty();
+        // make _mangaSourceName to mangaSourceName
+        _mangaSourceName = mangaSourceName;
+        // reset position of gridview
+        _scrollController.jumpTo(_scrollController.position.minScrollExtent);
       },
     );
 
-    await _getPopularManga(
-        mangaSourceName, _currentPageNumberData.currentNumber);
+    await _updatePopularManga(
+      mangaSourceName,
+      _currentPageNumberData.currentNumber,
+    );
   }
 
   @override
   void initState() {
     super.initState();
 
-    _startUp();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _getPopularManga();
+    });
 
     // Add listener to load new manga
     _scrollController.addListener(
       () async {
         if (_scrollController.position.pixels ==
             _scrollController.position.maxScrollExtent) {
-          logger.fine('Loading next page: $_currentPageNumberData');
-
           // If more than 10 seconds have passed since last page change, then change the page
           if ((DateTime.now().millisecondsSinceEpoch -
                   _currentPageNumberData.timeStamp) >=
               10000) {
-            logger.info('More than 10 seconds have passed');
+            log('Getting new page');
 
             setState(
               () {
@@ -279,8 +287,8 @@ class _PopularTab extends State<PopularTab>
                     DateTime.now().millisecondsSinceEpoch;
               },
             );
-            _getPopularManga(
-                _selectedMangaSourceName, _currentPageNumberData.currentNumber);
+            _updatePopularManga(
+                _mangaSourceName, _currentPageNumberData.currentNumber);
           } else {
             const snackBar = SnackBar(
               content: Text('You Are Going too Fast, Slow Down!'),
@@ -292,67 +300,28 @@ class _PopularTab extends State<PopularTab>
     );
   }
 
-  Future<void> _getPopularManga(String mangaSourceName, int pageNumber) async {
-    final popularManga =
+  Future<void> _updatePopularManga(
+      String mangaSourceName, int pageNumber) async {
+    final internalPopularManga =
         await mangaSourcesData[mangaSourceName]!.popular(page: pageNumber);
 
     if (mounted) {
       setState(
         () {
-          popularManga.addAll(popularManga);
+          _popularManga.addAll(internalPopularManga);
         },
       );
     }
-
-    _storeSearchResults(popularManga);
-  }
-
-  Future<List<MangaSearchResult>?> _loadSearchResults() async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-
-    final encodedData = prefs.getString('popular_manga');
-
-    if (encodedData == null) {
-      return null;
-    }
-
-    final List<MangaSearchResult> results =
-        MangaSearchResult.decode(encodedData);
-
-    return results;
   }
 
   /// is run only at startup
-  void _startUp() async {
-    // ─── Set Manga Source ────────────────────────────────────────
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-
-    String? selctedManga = prefs.getString('selected_manga_source');
-
-    if (selctedManga == null) {
-      final value = mangaSourcesData.keys.first;
-      await prefs.setString(
-        'selected_manga_source',
-        value,
-      );
-      _selectedMangaSourceName = value;
-    } else {
-      _selectedMangaSourceName = selctedManga;
-    }
-
+  void _getPopularManga() async {
     // get popular from internet or memory
-
-    final storedPopular = await _loadSearchResults();
 
     List<MangaSearchResult> results = [];
 
-    if (storedPopular == null) {
-      results = await mangaSourcesData[_selectedMangaSourceName]!
-          .popular(page: _currentPageNumberData.currentNumber);
-      _storeSearchResults(results);
-    } else {
-      results.addAll(storedPopular);
-    }
+    results = await mangaSourcesData[_mangaSourceName]!
+        .popular(page: _currentPageNumberData.currentNumber);
 
     if (mounted) {
       setState(
@@ -361,13 +330,5 @@ class _PopularTab extends State<PopularTab>
         },
       );
     }
-  }
-
-  void _storeSearchResults(List<MangaSearchResult> mangaSearchResults) async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-
-    final String encodedData = MangaSearchResult.encode(mangaSearchResults);
-
-    await prefs.setString('popular_manga', encodedData);
   }
 }
