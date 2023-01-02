@@ -1,12 +1,5 @@
 import '../../core/core.dart';
 
-final mangaSourcesData = {
-  'Asura Scans': AsuraScans(),
-  'Cosmic Scans': CosmicScans(),
-  'Flame Scans': FlameScans(),
-  'Luminous Scans': LuminousScans(),
-};
-
 class CurrentChapterNumberData {
   int currentNumber;
   int timeStamp;

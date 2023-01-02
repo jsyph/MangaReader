@@ -10,7 +10,7 @@ void main() {
       test(
         'Get chapter Images',
         () async {
-          final chapterImages = flameScans.getChapterImages(
+          final chapterImages = flameScans.getChapter(
             'https://flamescans.org/ygd/1671922861-reincarnation-of-the-murim-clans-former-ranker-chapter-1/',
           );
 
@@ -77,7 +77,7 @@ void main() {
       test(
         'Get chapter Images',
         () async {
-          final chapterImages = luminousScans.getChapterImages(
+          final chapterImages = luminousScans.getChapter(
             'https://luminousscans.com/1671729411-i-stole-the-number-one-rankers-soul-chapter-1-2/',
           );
 
@@ -146,7 +146,7 @@ void main() {
       test(
         'Get chapter Images',
         () async {
-          final chapterImages = cosmicScans.getChapterImages(
+          final chapterImages = cosmicScans.getChapter(
             'https://cosmicscans.com/for-my-derelict-favorite-chapter-1/',
           );
 

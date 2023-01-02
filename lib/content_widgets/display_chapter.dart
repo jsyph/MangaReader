@@ -18,7 +18,6 @@ class DisplayChapter extends StatefulWidget {
 class _DisplayChapter extends State<DisplayChapter> {
   List<String> chapterImages = [];
   String chapterNumber = '';
-  ValueNotifier<int> _networklHasErrorNotifier = ValueNotifier(0);
 
   @override
   void initState() {
@@ -58,45 +57,7 @@ class _DisplayChapter extends State<DisplayChapter> {
         child: ListView(
           children: chapterImages.map(
             (imageUrl) {
-              return ValueListenableBuilder(
-                valueListenable: _networklHasErrorNotifier,
-                builder: (context, value, child) {
-                  try {
-                    return CachedNetworkImage(
-                      filterQuality: FilterQuality.high,
-                      imageUrl: imageUrl,
-                      width: MediaQuery.of(context).size.width,
-                      fit: BoxFit.cover,
-                      progressIndicatorBuilder:
-                          (context, url, downloadProgress) {
-                        return LinearProgressIndicator(
-                          backgroundColor: Colors.purple,
-                          color: Colors.purpleAccent,
-                          value: downloadProgress.progress,
-                        );
-                      },
-                      errorWidget: (context, url, error) => ElevatedButton.icon(
-                        onPressed: () {
-                          setState(
-                            () {
-                              _networklHasErrorNotifier.value++;
-                              CachedNetworkImage.evictFromCache(url);
-                            },
-                          );
-                        },
-                        icon: const Icon(Icons.error),
-                        label: const Text('Tap To Retry'),
-                      ),
-                    );
-                  } catch (error) {
-                    log('FUCKING SHIT MAN');
-                    return const Icon(
-                      Icons.one_x_mobiledata,
-                      color: Colors.white,
-                    );
-                  }
-                },
-              );
+              return Image.network(imageUrl);
             },
           ).toList(),
         ),

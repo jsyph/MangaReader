@@ -5,6 +5,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:manga_reader/content_widgets/common.dart';
 import 'package:manga_reader/content_widgets/explore_widget/common.dart';
 import 'package:manga_reader/content_widgets/explore_widget/popular_tab.dart';
+import 'package:manga_reader/content_widgets/explore_widget/updates_tab.dart';
 
 class ExploreWidget extends StatefulWidget {
   const ExploreWidget({super.key});
@@ -24,6 +25,7 @@ class _ExploreWidgetState extends State<ExploreWidget>
   String _currentSelectedMangaSourceName = '';
 
   final _popularTab = PopularTab();
+  final _updatesTab = UpdatesTab();
 
   late final TabController _tabController;
 
@@ -101,9 +103,13 @@ class _ExploreWidgetState extends State<ExploreWidget>
                 if (value != null) {
                   // 👇 Code to run when selected manga source is changed
                   log(value);
-                  _changeSelectedMangaSourceName(value);
-                  _popularTab
-                      .changePopularManga(context, _currentSelectedMangaSourceName);
+                  _popularTab.changePopularManga(value).whenComplete(
+                        () => _changeSelectedMangaSourceName(value),
+                      );
+
+                  _updatesTab.changeUpdatesManga(value).whenComplete(
+                        () => _changeSelectedMangaSourceName(value),
+                      );
 
                   // 👆 -------------------------------------------------
                 }
@@ -137,7 +143,7 @@ class _ExploreWidgetState extends State<ExploreWidget>
         controller: _tabController,
         children: [
           _popularTab,
-          const Text('fuck'),
+          _updatesTab,
         ],
       ),
     );

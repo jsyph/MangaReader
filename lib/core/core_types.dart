@@ -1,5 +1,30 @@
 import 'dart:convert';
 
+/// Contains the chapter data for each chapter in the manga:
+/// - __chapterNumber__: (*double*) number of chapter
+/// - __releasedOn__: (*DateTime*) date the chapter is released on
+/// - __chapterUrl__: (*String*) the url for the chapter
+class MangaChapterData {
+  final String chapterTitle;
+  final DateTime releasedOn;
+  final String chapterUrl;
+
+  MangaChapterData(
+    this.chapterTitle,
+    this.releasedOn,
+    this.chapterUrl,
+  );
+
+  @override
+  String toString() {
+    return '''MangaChapterData(
+      chapterTitle: $chapterTitle,\n
+    releasedOn: $releasedOn,\n
+    chapterUrl: $chapterUrl,\n
+    )''';
+  }
+}
+
 enum MangaContentType {
   manhwa,
   manhua,
@@ -27,31 +52,6 @@ enum MangaContentType {
           return MangaContentType.none;
         }
     }
-  }
-}
-
-/// Contains the chapter data for each chapter in the manga:
-/// - __chapterNumber__: (*double*) number of chapter
-/// - __releasedOn__: (*DateTime*) date the chapter is released on
-/// - __chapterUrl__: (*String*) the url for the chapter
-class MangaChapterData {
-  final String chapterTitle;
-  final DateTime releasedOn;
-  final String chapterUrl;
-
-  MangaChapterData(
-    this.chapterTitle,
-    this.releasedOn,
-    this.chapterUrl,
-  );
-
-  @override
-  String toString() {
-    return '''MangaChapterData(
-      chapterTitle: $chapterTitle,\n
-    releasedOn: $releasedOn,\n
-    chapterUrl: $chapterUrl,\n
-    )''';
   }
 }
 
@@ -239,6 +239,11 @@ abstract class ManhwaSource {
 
   /// Searches for a query on manhwa site
   Future<List<MangaSearchResult>> search(String query) async {
+    throw UnimplementedError();
+  }
+
+  /// Searches for a query on manhwa site
+  Future<List<MangaSearchResult>> updates({int page = 1}) async {
     throw UnimplementedError();
   }
 }

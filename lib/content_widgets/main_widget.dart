@@ -24,12 +24,8 @@ class MangaReaderApp extends StatelessWidget {
       title: 'Flutter Demo',
       home: const MainWidget(),
       theme: ThemeData(
-        brightness: Brightness.light,
-      ),
-      darkTheme: ThemeData(
         brightness: Brightness.dark,
       ),
-      themeMode: ThemeMode.system,
     );
   }
 }

@@ -117,16 +117,15 @@ class FlameScans implements ManhwaSource {
       // ─── Combine Into Mangadetails ───────────────────────
 
       return MangaDetails(
-        mangaTitle,
-        mangaDescription,
-        mangaCoverUrl,
-        mangaRating,
-        mangaStatus,
-        mangaReleasedOn,
-        mangaChapters,
-        mangaTags,
-        mangaContentType
-      );
+          mangaTitle,
+          mangaDescription,
+          mangaCoverUrl,
+          mangaRating,
+          mangaStatus,
+          mangaReleasedOn,
+          mangaChapters,
+          mangaTags,
+          mangaContentType);
     }
 
     return MangaDetails.empty();
@@ -135,6 +134,13 @@ class FlameScans implements ManhwaSource {
   @override
   Future<List<MangaSearchResult>> popular({int page = 1}) async {
     final targetEndpoint = '/ygd/series/?type=manhwa&order=popular&page=$page';
+
+    return await _makeSearch(targetEndpoint);
+  }
+
+  @override
+  Future<List<MangaSearchResult>> updates({int page = 1}) async {
+    final targetEndpoint = '/ygd/series/?status=&type=&order=update&page=$page';
 
     return await _makeSearch(targetEndpoint);
   }

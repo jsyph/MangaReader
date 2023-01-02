@@ -64,8 +64,7 @@ class LuminousScans implements ManhwaSource {
       // ─── Get Type ────────────────────────────────────────
 
       final mangaContentType = MangaContentType.parse(
-        _webScraper.getFirstElementTitle('div.tsinfo > div.imptdt > a')
-      );
+          _webScraper.getFirstElementTitle('div.tsinfo > div.imptdt > a'));
 
       // ─── Get Year Released ───────────────────────────────
 
@@ -115,17 +114,8 @@ class LuminousScans implements ManhwaSource {
 
       // ─── Return Mangadetails Object ──────────────────────
 
-      return MangaDetails(
-        title,
-        description,
-        coverUrl,
-        rating,
-        status,
-        dateReleased,
-        chapters,
-        tags,
-        mangaContentType
-      );
+      return MangaDetails(title, description, coverUrl, rating, status,
+          dateReleased, chapters, tags, mangaContentType);
     }
 
     return MangaDetails.empty();
@@ -143,6 +133,13 @@ class LuminousScans implements ManhwaSource {
     final formatedQuery = query.toLowerCase().replaceAll(RegExp(r' '), '-');
 
     return await _makeSearch('/?s=$formatedQuery');
+  }
+
+  @override
+  Future<List<MangaSearchResult>> updates({int page = 1}) async {
+    final targetEndpoint = '/series?status=&type=&order=update&page=$page';
+
+    return await _makeSearch(targetEndpoint);
   }
 
   Future<List<MangaSearchResult>> _makeSearch(String targetEndpoint) async {

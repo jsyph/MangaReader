@@ -8,23 +8,23 @@ import '../common.dart';
 import '../manga_details.dart';
 import 'common.dart';
 
-class PopularTab extends StatefulWidget {
-  final _state = _PopularTab();
+class UpdatesTab extends StatefulWidget {
+  final _state = _UpdatesTab();
 
-  PopularTab({super.key});
+  UpdatesTab({super.key});
 
-  Future<void> changePopularManga(String mangaSource) async {
-    await _state.changePopularManga(mangaSource);
+  Future<void> changeUpdatesManga(String mangaSource) async {
+    await _state.changeUpdatesManga(mangaSource);
   }
 
   @override
   // ignore: no_logic_in_create_state
-  State<PopularTab> createState() => _state;
+  State<UpdatesTab> createState() => _state;
 }
 
-class _PopularTab extends State<PopularTab>
-    with AutomaticKeepAliveClientMixin<PopularTab> {
-  List<MangaSearchResult> _popularManga = [];
+class _UpdatesTab extends State<UpdatesTab>
+    with AutomaticKeepAliveClientMixin<UpdatesTab> {
+  List<MangaSearchResult> _updatesManga = [];
 
   final _scrollController = ScrollController();
 
@@ -41,7 +41,7 @@ class _PopularTab extends State<PopularTab>
   Widget build(BuildContext context) {
     super.build(context);
 
-    if (_popularManga.isEmpty) {
+    if (_updatesManga.isEmpty) {
       return loadingWidget;
     }
 
@@ -52,7 +52,7 @@ class _PopularTab extends State<PopularTab>
         mainAxisSpacing: 5,
         crossAxisSpacing: 5,
         childAspectRatio: 0.50,
-        children: _popularManga.map(
+        children: _updatesManga.map(
           (mangaSearchResult) {
             // https://stackoverflow.com/a/57866878/14928208 👇
             return Material(
@@ -155,14 +155,14 @@ class _PopularTab extends State<PopularTab>
     );
   }
 
-  Future<void> changePopularManga(String mangaSourceName) async {
+  Future<void> changeUpdatesManga(String mangaSourceName) async {
     // If the _popularManga list is empty, which means the screen is being update, pass, else continue.
-    if (_popularManga.isNotEmpty) {
+    if (_updatesManga.isNotEmpty) {
       setState(
         () {
           if (_scrollController.hasClients) {
             // make popular_manga to []
-            _popularManga = [];
+            _updatesManga = [];
             // reset CurrentChapterNumberData
             _currentPageNumberData = CurrentChapterNumberData.empty();
             // make _mangaSourceName to mangaSourceName
@@ -227,12 +227,12 @@ class _PopularTab extends State<PopularTab>
     List<MangaSearchResult> results = [];
 
     results = await mangaSourcesData[_mangaSourceName]!
-        .popular(page: _currentPageNumberData.currentNumber);
+        .updates(page: _currentPageNumberData.currentNumber);
 
     if (mounted) {
       setState(
         () {
-          _popularManga.addAll(results);
+          _updatesManga.addAll(results);
         },
       );
     }
@@ -393,12 +393,12 @@ class _PopularTab extends State<PopularTab>
       String mangaSourceName, int pageNumber) async {
         
     final internalPopularManga =
-        await mangaSourcesData[mangaSourceName]!.popular(page: pageNumber);
+        await mangaSourcesData[mangaSourceName]!.updates(page: pageNumber);
 
     if (mounted) {
       setState(
         () {
-          _popularManga.addAll(internalPopularManga);
+          _updatesManga.addAll(internalPopularManga);
         },
       );
     }

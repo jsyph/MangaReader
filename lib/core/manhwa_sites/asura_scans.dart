@@ -1,9 +1,9 @@
 import 'dart:developer';
 
+import 'package:logging/logging.dart';
 import 'package:manga_reader/core/utils.dart';
 import 'package:manga_reader/core/webscraper_extension.dart';
 import 'package:web_scraper/web_scraper.dart';
-import 'package:logging/logging.dart';
 
 import '../core_types.dart';
 
@@ -150,6 +150,13 @@ class AsuraScans implements ManhwaSource {
     return await _makeSearch('/?s=$targetEndpoint');
   }
 
+  @override
+  Future<List<MangaSearchResult>> updates({int page = 1}) async {
+    final targetEndpoint = '/manga/?page=$page&order=update';
+
+    return await _makeSearch(targetEndpoint);
+  }
+  
   Future<List<MangaSearchResult>> _makeSearch(String targetEndpoint) async {
     if (await _webScraper.loadWebPage(targetEndpoint)) {
       // ─── Get Cover Urls ──────────────────
