@@ -1,7 +1,7 @@
 import 'package:bottom_navy_bar/bottom_navy_bar.dart';
 import 'package:flutter/material.dart';
-import 'package:manga_reader/content_widgets/search_widget.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:manga_reader/content_widgets/search_widget.dart';
 
 import 'explore_widget/explore_widget.dart';
 import 'home_widget.dart';
@@ -31,12 +31,16 @@ class MangaReaderApp extends StatelessWidget {
 }
 
 class _MainWidgetState extends State<MainWidget> {
-  static const List<Widget> _widgetOptions = <Widget>[
-    HomeWidget(),
-    ExploreWidget(),
-    SearchWidget(),
-    LibraryWidget(),
+  final List<Widget> _widgetOptions = [
+    const HomeWidget(),
+    const ExploreWidget(),
+    const SearchWidget(),
+    const LibraryWidget(),
   ];
+
+  final _curveAnimation = Curves.easeOutCubic;
+  final _animationDuration = const Duration(milliseconds: 300);
+
   int _currentIndex = 0;
 
   final _pageController = PageController();
@@ -56,15 +60,15 @@ class _MainWidgetState extends State<MainWidget> {
       bottomNavigationBar: BottomNavyBar(
         selectedIndex: _currentIndex,
         showElevation: true,
-        itemCornerRadius: 24,
-        curve: Curves.linear,
-        animationDuration: const Duration(milliseconds: 160),
+        itemCornerRadius: 30,
+        curve: _curveAnimation,
+        animationDuration: _animationDuration,
         onItemSelected: (index) {
           setState(() => _currentIndex = index);
           _pageController.animateToPage(
             index,
-            duration: const Duration(milliseconds: 160),
-            curve: Curves.linear,
+            duration: _animationDuration,
+            curve: _curveAnimation,
           );
         },
         items: [

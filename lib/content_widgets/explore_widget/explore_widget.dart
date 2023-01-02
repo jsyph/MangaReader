@@ -103,12 +103,12 @@ class _ExploreWidgetState extends State<ExploreWidget>
                 if (value != null) {
                   // 👇 Code to run when selected manga source is changed
                   log(value);
-                  _popularTab.changePopularManga(value).whenComplete(
-                        () => _changeSelectedMangaSourceName(value),
+                  _popularTab.changePopularManga(value).then(
+                        (_) => _changeSelectedMangaSourceName(value),
                       );
 
-                  _updatesTab.changeUpdatesManga(value).whenComplete(
-                        () => _changeSelectedMangaSourceName(value),
+                  _updatesTab.changeUpdatesManga(value).then(
+                        (_) => _changeSelectedMangaSourceName(value),
                       );
 
                   // 👆 -------------------------------------------------

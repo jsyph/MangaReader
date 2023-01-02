@@ -29,5 +29,4 @@ final mangaSourcesData = {
   'Cosmic Scans': CosmicScans(),
   'Flame Scans': FlameScans(),
   'Luminous Scans': LuminousScans(),
-  'Realm Scans': RealmScans(),
 };

@@ -1,15 +1,19 @@
-import 'dart:developer';
-
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:manga_reader/content_widgets/common.dart';
 import 'package:manga_reader/core/core.dart';
-import 'package:manga_reader/core/utils.dart';
 
 class DisplayChapter extends StatefulWidget {
   final MangaChapterData _chapterData;
   final ManhwaSource _mangaSource;
-  const DisplayChapter(this._chapterData, this._mangaSource, {super.key});
+  final MangaChapterData? _previousChapterData;
+  final MangaChapterData? _nextChapterData;
+  const DisplayChapter(
+    this._chapterData,
+    this._mangaSource,
+    this._previousChapterData,
+    this._nextChapterData, {
+    super.key,
+  });
 
   @override
   State<DisplayChapter> createState() => _DisplayChapter();
@@ -57,7 +61,9 @@ class _DisplayChapter extends State<DisplayChapter> {
         child: ListView(
           children: chapterImages.map(
             (imageUrl) {
-              return Image.network(imageUrl);
+              return Image.network(
+                imageUrl,
+              );
             },
           ).toList(),
         ),
