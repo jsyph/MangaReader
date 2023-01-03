@@ -304,7 +304,7 @@ class _PopularTab extends State<PopularTab>
     }
     return Row(
       children: [
-        pipeSeperatorWidget,
+        pipeSeparatorWidget,
         mangaType,
       ],
     );

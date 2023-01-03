@@ -10,6 +10,7 @@ import '../core_types.dart';
 class AsuraScans implements ManhwaSource {
   final _webScraper = WebScraper('https://asura.gg');
   final logger = Logger('AsuraScans');
+  final _mangaSourceName = 'Asura Scans';
 
   @override
   Future<List<String>> getChapterImages(String chapterUrl) async {
@@ -110,6 +111,7 @@ class AsuraScans implements ManhwaSource {
             mangaChapterTitles[i],
             mangaChapterReleasedOns[i],
             mangaChapterUrls[i],
+            _mangaSourceName,
           ),
         );
       }
@@ -127,7 +129,8 @@ class AsuraScans implements ManhwaSource {
         mangaReleasedAt,
         mangaChapters,
         mangaTags,
-        mangaContentType
+        mangaContentType,
+        _mangaSourceName,
       );
     }
 
@@ -156,7 +159,7 @@ class AsuraScans implements ManhwaSource {
 
     return await _makeSearch(targetEndpoint);
   }
-  
+
   Future<List<MangaSearchResult>> _makeSearch(String targetEndpoint) async {
     if (await _webScraper.loadWebPage(targetEndpoint)) {
       // ─── Get Cover Urls ──────────────────
@@ -206,6 +209,7 @@ class AsuraScans implements ManhwaSource {
             resultMangaUrls[i],
             MangaStatus.none,
             resultMangaContentTypes[i],
+            _mangaSourceName,
           ),
         );
       }

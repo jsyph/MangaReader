@@ -19,7 +19,7 @@ final loadingWidget = SpinKitFoldingCube(
   },
 );
 
-const pipeSeperatorWidget = Padding(
+const pipeSeparatorWidget = Padding(
   padding: EdgeInsets.symmetric(horizontal: 5.0),
   child: Text('|'),
 );

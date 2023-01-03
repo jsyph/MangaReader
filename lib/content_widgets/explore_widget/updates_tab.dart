@@ -304,7 +304,7 @@ class _UpdatesTab extends State<UpdatesTab>
     }
     return Row(
       children: [
-        pipeSeperatorWidget,
+        pipeSeparatorWidget,
         mangaType,
       ],
     );

@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:manga_reader/core/utils.dart';
 import 'package:manga_reader/core/webscraper_extension.dart';
 import 'package:web_scraper/web_scraper.dart';
@@ -6,6 +8,7 @@ import '../core_types.dart';
 
 class LuminousScans implements ManhwaSource {
   final _webScraper = WebScraper('https://luminousscans.com');
+  final _mangaSourceName = 'Luminous Scans';
 
   @override
   Future<List<String>> getChapterImages(String chapterUrl) async {
@@ -108,14 +111,25 @@ class LuminousScans implements ManhwaSource {
             chapterTitles[i],
             chapterReleasedOn[i],
             chapterUrls[i],
+            _mangaSourceName,
           ),
         );
       }
 
       // ─── Return Mangadetails Object ──────────────────────
 
-      return MangaDetails(title, description, coverUrl, rating, status,
-          dateReleased, chapters, tags, mangaContentType);
+      return MangaDetails(
+        title,
+        description,
+        coverUrl,
+        rating,
+        status,
+        dateReleased,
+        chapters,
+        tags,
+        mangaContentType,
+        _mangaSourceName,
+      );
     }
 
     return MangaDetails.empty();
@@ -130,9 +144,9 @@ class LuminousScans implements ManhwaSource {
 
   @override
   Future<List<MangaSearchResult>> search(String query) async {
-    final formatedQuery = query.toLowerCase().replaceAll(RegExp(r' '), '-');
+    final formattedQuery = query.toLowerCase().replaceAll(RegExp(r' '), '-');
 
-    return await _makeSearch('/?s=$formatedQuery');
+    return await _makeSearch('/?s=$formattedQuery');
   }
 
   @override
@@ -144,7 +158,7 @@ class LuminousScans implements ManhwaSource {
 
   Future<List<MangaSearchResult>> _makeSearch(String targetEndpoint) async {
     if (await _webScraper.loadWebPage(targetEndpoint)) {
-      // Get manga ruls and titles
+      // Get manga urls and titles
       final anchorTag =
           _webScraper.getElement('div.bsx > a', ['href', 'title']);
 
@@ -181,24 +195,34 @@ class LuminousScans implements ManhwaSource {
       // Get manga content type
       final mangaContentTypes =
           _webScraper.getElementAttributeUnwrapString('span.type', 'class').map(
-        (e) {
-          return MangaContentType.parse(e.replaceAll('type ', ''));
+        (mangaType) {
+          log(mangaType);
+          return MangaContentType.parse(mangaType.replaceAll('type ', ''));
         },
       ).toList();
+      log(mangaContentTypes.toString());
 
       List<MangaSearchResult> results = [];
 
       for (int i = 0; i < mangaUrls.length; i++) {
-        results.add(
-          MangaSearchResult(
+        log((!mangaTitles[i].contains('(Novel)')).toString());
+        // if manga title contains (Novel) then add
+        if (!mangaTitles[i].contains('(Novel)')) {
+          results.add(
+            MangaSearchResult(
               coverUrls[i],
               mangaTitles[i],
               latestChapterTitles[i],
               ratings[i],
               mangaUrls[i],
               MangaStatus.none,
-              mangaContentTypes[i]),
-        );
+              mangaContentTypes[i],
+              _mangaSourceName
+            ),
+          );
+        } else {
+          mangaContentTypes.insert(i, MangaContentType.none);
+        }
       }
       return results;
     }

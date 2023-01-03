@@ -8,11 +8,13 @@ class MangaChapterData {
   final String chapterTitle;
   final DateTime releasedOn;
   final String chapterUrl;
+  final String mangaSourceName;
 
   MangaChapterData(
     this.chapterTitle,
     this.releasedOn,
     this.chapterUrl,
+    this.mangaSourceName,
   );
 
   @override
@@ -55,7 +57,7 @@ enum MangaContentType {
   }
 }
 
-/// Conatins the manga details:
+/// Contains the manga details:
 /// - __title__: (*String*) manga tile
 /// - __description__: (*String*) manga description
 /// - __coverUrl__: (*String*) manga cover url
@@ -73,12 +75,22 @@ class MangaDetails {
   final DateTime releasedAt;
   final List<String> tags;
   final MangaContentType contentType;
+  final String mangaSourceName;
 
   /// sorted in descending order
   final List<MangaChapterData> chapters;
 
-  MangaDetails(this.title, this.description, this.coverUrl, this.rating,
-      this.status, this.releasedAt, this.chapters, this.tags, this.contentType);
+  MangaDetails(
+      this.title,
+      this.description,
+      this.coverUrl,
+      this.rating,
+      this.status,
+      this.releasedAt,
+      this.chapters,
+      this.tags,
+      this.contentType,
+      this.mangaSourceName);
 
   @override
   String toString() {
@@ -96,23 +108,14 @@ class MangaDetails {
 
   /// Returns an empty MangaDetails object
   static MangaDetails empty() {
-    return MangaDetails(
-      '',
-      '',
-      '',
-      0.0,
-      MangaStatus.none,
-      DateTime.now(),
-      [],
-      [],
-      MangaContentType.none,
-    );
+    return MangaDetails('', '', '', 0.0, MangaStatus.none, DateTime.now(), [],
+        [], MangaContentType.none, '');
   }
 }
 
 /// Data for each manga search result
 ///
-/// Conatins:
+/// Contains:
 /// - __coverUrl__: (*String*) cover url
 /// - __title__: (*String*) title
 /// - __latestChapter__: (*double*) latest chapter number
@@ -126,6 +129,7 @@ class MangaSearchResult {
   final String mangaUrl;
   final MangaStatus status;
   final MangaContentType? contentType;
+  final String mangaSourceName;
 
   MangaSearchResult(
     this.coverUrl,
@@ -135,6 +139,7 @@ class MangaSearchResult {
     this.mangaUrl,
     this.status,
     this.contentType,
+    this.mangaSourceName,
   );
 
   // ─── For Storing Search Results ──────────────────────────────────────
@@ -146,7 +151,9 @@ class MangaSearchResult {
       double.parse(jsonData['rating']),
       jsonData['mangaUrl'],
       MangaStatus.parse(jsonData['status'].toString().split('.').last),
-      MangaContentType.parse(jsonData['contentType'].toString().split('.').last),
+      MangaContentType.parse(
+          jsonData['contentType'].toString().split('.').last),
+      jsonData['mangaSourceName'],
     );
   }
 
@@ -171,6 +178,7 @@ class MangaSearchResult {
       'mangaUrl': mangaSearchResult.mangaUrl,
       'status': mangaSearchResult.status.toString(),
       'contentType': mangaSearchResult.contentType.toString(),
+      'mangaSourceName': mangaSearchResult.mangaSourceName,
     };
   }
 }

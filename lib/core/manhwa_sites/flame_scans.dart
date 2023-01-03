@@ -8,6 +8,7 @@ import '../core_types.dart';
 
 class FlameScans implements ManhwaSource {
   final _webScraper = WebScraper('https://flamescans.org');
+  final _mangaSourceName = 'Flame Scans';
 
   @override
   Future<List<String>> getChapterImages(String chapterUrl) async {
@@ -110,6 +111,7 @@ class FlameScans implements ManhwaSource {
             mangaChapterTitles[i],
             mangaChapterReleasedOn[i],
             mangaChapterUrls[i],
+            _mangaSourceName,
           ),
         );
       }
@@ -117,15 +119,17 @@ class FlameScans implements ManhwaSource {
       // ─── Combine Into Mangadetails ───────────────────────
 
       return MangaDetails(
-          mangaTitle,
-          mangaDescription,
-          mangaCoverUrl,
-          mangaRating,
-          mangaStatus,
-          mangaReleasedOn,
-          mangaChapters,
-          mangaTags,
-          mangaContentType);
+        mangaTitle,
+        mangaDescription,
+        mangaCoverUrl,
+        mangaRating,
+        mangaStatus,
+        mangaReleasedOn,
+        mangaChapters,
+        mangaTags,
+        mangaContentType,
+        _mangaSourceName,
+      );
     }
 
     return MangaDetails.empty();
@@ -147,7 +151,7 @@ class FlameScans implements ManhwaSource {
 
   @override
   Future<List<MangaSearchResult>> search(String query) async {
-    final formattedQuery = query.replaceAll(RegExp(r' '), '+').toLowerCase();
+    final formattedQuery = query.toLowerCase();
 
     return await _makeSearch('/ygd/?s=$formattedQuery');
   }
@@ -170,7 +174,7 @@ class FlameScans implements ManhwaSource {
           )
           .toList();
 
-      final resulMangaUrls = resultTitleAndMangaUrl
+      final resultMangaUrls = resultTitleAndMangaUrl
           .map(
             (e) => e['attributes']['href'].toString(),
           )
@@ -194,11 +198,22 @@ class FlameScans implements ManhwaSource {
 
       List<MangaSearchResult> results = [];
       // combine into list of MangaSearchResult
-      for (int i = 0; i < resulMangaUrls.length; i++) {
-        results.add(
-          MangaSearchResult(resultCoverUrls[i], resultTitles[i], null,
-              resultRatings[i], resulMangaUrls[i], resultStatuses[i], null),
-        );
+      for (int i = 0; i < resultMangaUrls.length; i++) {
+        if (!resultTitles[i].contains('-Novel') ||
+            !resultTitles.contains('(Novel))')) {
+          results.add(
+            MangaSearchResult(
+              resultCoverUrls[i],
+              resultTitles[i],
+              null,
+              resultRatings[i],
+              resultMangaUrls[i],
+              resultStatuses[i],
+              null,
+              _mangaSourceName,
+            ),
+          );
+        }
       }
 
       return results;

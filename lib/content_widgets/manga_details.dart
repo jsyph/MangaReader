@@ -132,7 +132,7 @@ class _DisplayMangaDetails extends State<DisplayMangaDetails> {
                       ),
                     ),
 
-                    pipeSeperatorWidget,
+                    pipeSeparatorWidget,
 
                     // Figure out when to display status
                     () {

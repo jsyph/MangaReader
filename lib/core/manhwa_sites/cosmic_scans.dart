@@ -8,6 +8,7 @@ import '../core_types.dart';
 
 class CosmicScans implements ManhwaSource {
   final _webScraper = WebScraper('https://cosmicscans.com');
+  final _mangaSourceName = 'Cosmic Scans';
 
   @override
   Future<List<String>> getChapterImages(String chapterUrl) async {
@@ -98,6 +99,7 @@ class CosmicScans implements ManhwaSource {
             mangaChapterTitles[i],
             mangaChapterDates[i],
             mangaChapterUrls[i],
+            _mangaSourceName,
           ),
         );
       }
@@ -112,7 +114,8 @@ class CosmicScans implements ManhwaSource {
         mangaReleasedAt,
         mangaChapters,
         mangaTags,
-        mangaContentType
+        mangaContentType,
+        _mangaSourceName,
       );
     }
 
@@ -135,7 +138,7 @@ class CosmicScans implements ManhwaSource {
 
   @override
   Future<List<MangaSearchResult>> search(String query) async {
-    final formattedQuery = query.replaceAll(RegExp(r' '), '+').toLowerCase();
+    final formattedQuery = query.toLowerCase();
 
     return await _makeSearch('/?s=$formattedQuery');
   }
@@ -197,6 +200,7 @@ class CosmicScans implements ManhwaSource {
             resultMangaUrls[i],
             MangaStatus.none,
             resultMangaContentTypes[i],
+            _mangaSourceName,
           ),
         );
       }
