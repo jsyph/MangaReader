@@ -4,7 +4,7 @@ import 'package:manga_reader/core/utils.dart';
 import 'package:manga_reader/core/webscraper_extension.dart';
 import 'package:web_scraper/web_scraper.dart';
 
-import '../core_types.dart';
+import '../core_types/core_types.dart';
 
 class LuminousScans implements ManhwaSource {
   final _webScraper = WebScraper('https://luminousscans.com');

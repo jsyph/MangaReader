@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:manga_reader/content_widgets/search_widget.dart';
 
-import 'explore_widget/explore_widget.dart';
+import 'explore_widget.dart';
 import 'home_widget.dart';
 import 'library_widget.dart';
 import 'settings_widget.dart';
@@ -31,6 +31,10 @@ class MangaReaderApp extends StatelessWidget {
 }
 
 class _MainWidgetState extends State<MainWidget> {
+  final _animationDuration = const Duration(milliseconds: 300);
+  int _currentIndex = 0;
+  final _curveAnimation = Curves.easeOutCubic;
+  final _pageController = PageController();
   final List<Widget> _widgetOptions = [
     const HomeWidget(),
     const ExploreWidget(),
@@ -38,12 +42,16 @@ class _MainWidgetState extends State<MainWidget> {
     const LibraryWidget(),
   ];
 
-  final _curveAnimation = Curves.easeOutCubic;
-  final _animationDuration = const Duration(milliseconds: 300);
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
 
-  int _currentIndex = 0;
-
-  final _pageController = PageController();
+  @override
+  void initState() {
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -99,16 +107,5 @@ class _MainWidgetState extends State<MainWidget> {
         ],
       ),
     );
-  }
-
-  @override
-  void dispose() {
-    _pageController.dispose();
-    super.dispose();
-  }
-
-  @override
-  void initState() {
-    super.initState();
   }
 }
