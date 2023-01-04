@@ -2,7 +2,6 @@ import 'dart:developer';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hive/hive.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -40,11 +39,6 @@ class _ExploreWidgetState extends State<ExploreWidget>
     with
         AutomaticKeepAliveClientMixin<ExploreWidget>,
         SingleTickerProviderStateMixin {
-  // ─── For AppBar ──────────────────────────────────────────────────────
-
-  bool isScrollingDown = false;
-  bool _showAppBar = true;
-
   // ─── Explore Widget ──────────────────────────────────────────────────
 
   String _currentSelectedMangaSourceName = '';
@@ -58,14 +52,12 @@ class _ExploreWidgetState extends State<ExploreWidget>
   List<MangaSearchResult> _popularManga = [];
   CurrentChapterNumberData _popularTabCurrentPageNumberData =
       CurrentChapterNumberData.empty();
-  final _popularTabScrollViewController = ScrollController();
-
   // ─── For Updates Tab ─────────────────────────────────────────────────
 
   List<MangaSearchResult> _updatesManga = [];
   CurrentChapterNumberData _updatesTabCurrentPageNumberData =
       CurrentChapterNumberData.empty();
-  final _updatesTabScrollViewController = ScrollController();
+
   // ─────────────────────────────────────────────────────────────────────
 
   @override
@@ -78,167 +70,202 @@ class _ExploreWidgetState extends State<ExploreWidget>
 
     return Scaffold(
       body: NestedScrollView(
-        floatHeaderSlivers: true,
-        headerSliverBuilder: (context, innerBoxIsScrolled) => [
-          SliverAppBar(
-            floating: true,
-            title: const Text('Current Source:'),
-            bottom: TabBar(
-              controller: _tabController,
-              tabs: [
-                Tab(
-                  child: RichText(
-                    text: const TextSpan(
-                      children: [
-                        TextSpan(
-                          text: "Popular",
-                        ),
-                        WidgetSpan(
-                          alignment: PlaceholderAlignment.baseline,
-                          baseline: TextBaseline.alphabetic,
-                          child: SizedBox(width: 10),
-                        ),
-                        WidgetSpan(
-                          child: FaIcon(
-                            FontAwesomeIcons.fire,
-                            size: 16,
-                            color: Colors.redAccent,
+          floatHeaderSlivers: true,
+          headerSliverBuilder: (context, innerBoxIsScrolled) => [
+                SliverAppBar(
+                  floating: true,
+                  title: const Text('Current Source:'),
+                  bottom: TabBar(
+                    controller: _tabController,
+                    tabs: [
+                      Tab(
+                        child: RichText(
+                          text: const TextSpan(
+                            children: [
+                              TextSpan(
+                                text: "Popular",
+                              ),
+                              WidgetSpan(
+                                alignment: PlaceholderAlignment.baseline,
+                                baseline: TextBaseline.alphabetic,
+                                child: SizedBox(width: 10),
+                              ),
+                              WidgetSpan(
+                                child: FaIcon(
+                                  FontAwesomeIcons.fire,
+                                  size: 16,
+                                  color: Colors.redAccent,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                      ],
-                    ),
-                  ),
-                ),
-                Tab(
-                  child: RichText(
-                    text: const TextSpan(
-                      children: [
-                        TextSpan(
-                          text: "Updates",
-                        ),
-                        WidgetSpan(
-                          alignment: PlaceholderAlignment.baseline,
-                          baseline: TextBaseline.alphabetic,
-                          child: SizedBox(width: 10),
-                        ),
-                        WidgetSpan(
-                          child: Icon(
-                            Icons.new_releases,
-                            size: 16,
-                            color: Colors.yellowAccent,
+                      ),
+                      Tab(
+                        child: RichText(
+                          text: const TextSpan(
+                            children: [
+                              TextSpan(
+                                text: "Updates",
+                              ),
+                              WidgetSpan(
+                                alignment: PlaceholderAlignment.baseline,
+                                baseline: TextBaseline.alphabetic,
+                                child: SizedBox(width: 10),
+                              ),
+                              WidgetSpan(
+                                child: Icon(
+                                  Icons.new_releases,
+                                  size: 16,
+                                  color: Colors.yellowAccent,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
+                  actions: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 5),
+                      color: Theme.of(context).appBarTheme.backgroundColor,
+
+                      // dropdown below..
+                      child: DropdownButton<String>(
+                        value: _currentSelectedMangaSourceName,
+                        onChanged: (value) {
+                          if (value != null) {
+                            // 👇 Code to run when selected manga source is changed
+                            log(value);
+                            _changePopularManga(value).then(
+                              (_) => _changeSelectedMangaSourceName(value),
+                            );
+
+                            _changeUpdatesManga(value).then(
+                              (_) => _changeSelectedMangaSourceName(value),
+                            );
+
+                            // 👆 -------------------------------------------------
+                          }
+                        },
+                        items: mangaSourcesData.keys
+                            .map<DropdownMenuItem<String>>(
+                              (String value) => DropdownMenuItem<String>(
+                                value: value,
+                                child: Text(
+                                  value,
+                                  style: const TextStyle(
+                                    fontSize: 18,
+                                    fontStyle: FontStyle.italic,
+                                  ),
+                                ),
+                              ),
+                            )
+                            .toList(),
+
+                        // add extra sugar..
+                        icon: const Icon(
+                          Icons.arrow_drop_down,
+                          color: Colors.black,
+                        ),
+                        underline: const SizedBox(),
+                      ),
+                    )
+                  ],
                 ),
               ],
-            ),
-            actions: [
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                color: Theme.of(context).appBarTheme.backgroundColor,
+          body: TabBarView(
+            controller: _tabController,
+            children: [
+              Builder(
+                builder: (context) {
+                  final scrollController = PrimaryScrollController.of(context)!;
 
-                // dropdown below..
-                child: DropdownButton<String>(
-                  value: _currentSelectedMangaSourceName,
-                  onChanged: (value) {
-                    if (value != null) {
-                      // 👇 Code to run when selected manga source is changed
-                      log(value);
-                      _changePopularManga(value).then(
-                        (_) => _changeSelectedMangaSourceName(value),
-                      );
+                  // Add listener to load new manga
+                  scrollController.addListener(
+                    () async {
+                      if (scrollController.position.pixels ==
+                          scrollController.position.maxScrollExtent) {
+                        // If more than 10 seconds have passed since last page change, then change the page
+                        if ((DateTime.now().millisecondsSinceEpoch -
+                                _popularTabCurrentPageNumberData.timeStamp) >=
+                            10000) {
+                          log('Getting new page');
 
-                      _changeUpdatesManga(value).then(
-                        (_) => _changeSelectedMangaSourceName(value),
-                      );
+                          setState(
+                            () {
+                              _popularTabCurrentPageNumberData.currentNumber++;
+                              _popularTabCurrentPageNumberData.timeStamp =
+                                  DateTime.now().millisecondsSinceEpoch;
+                            },
+                          );
+                          _updatePopularManga(_currentSelectedMangaSourceName,
+                              _popularTabCurrentPageNumberData.currentNumber);
+                        } else {
+                          const snackBar = SnackBar(
+                            content: Text('You Are Going too Fast, Slow Down!'),
+                          );
+                          ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                        }
+                      }
+                    },
+                  );
 
-                      // 👆 -------------------------------------------------
-                    }
-                  },
-                  items: mangaSourcesData.keys
-                      .map<DropdownMenuItem<String>>(
-                        (String value) => DropdownMenuItem<String>(
-                          value: value,
-                          child: Text(
-                            value,
-                            style: const TextStyle(
-                              fontSize: 18,
-                              fontStyle: FontStyle.italic,
-                            ),
-                          ),
-                        ),
-                      )
-                      .toList(),
+                  // Remove top padding from gridView
+                  return MediaQuery.removePadding(
+                    removeTop: true,
+                    context: context,
+                    child: _popularTabWidget(scrollController),
+                  );
+                },
+              ),
+              Builder(
+                builder: (context) {
+                  final scrollController = PrimaryScrollController.of(context)!;
 
-                  // add extra sugar..
-                  icon: const Icon(
-                    Icons.arrow_drop_down,
-                    color: Colors.black,
-                  ),
-                  underline: const SizedBox(),
-                ),
-              )
+                  // Add listener to load new manga
+                  scrollController.addListener(
+                    () async {
+                      if (scrollController.position.pixels ==
+                          scrollController.position.maxScrollExtent) {
+                        // If more than 10 seconds have passed since last page change, then change the page
+                        if ((DateTime.now().millisecondsSinceEpoch -
+                                _updatesTabCurrentPageNumberData.timeStamp) >=
+                            10000) {
+                          log('Getting new page');
+
+                          setState(
+                            () {
+                              _updatesTabCurrentPageNumberData.currentNumber++;
+                              _updatesTabCurrentPageNumberData.timeStamp =
+                                  DateTime.now().millisecondsSinceEpoch;
+                            },
+                          );
+                          _updatePopularManga(_currentSelectedMangaSourceName,
+                              _updatesTabCurrentPageNumberData.currentNumber);
+                        } else {
+                          const snackBar = SnackBar(
+                            content: Text('You Are Going too Fast, Slow Down!'),
+                          );
+                          ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                        }
+                      }
+                    },
+                  );
+
+                  // Remove top padding from gridView
+                  return MediaQuery.removePadding(
+                    removeTop: true,
+                    context: context,
+                    child: _updatesTabWidget(scrollController),
+                  );
+                },
+              ),
             ],
-          ),
-        ],
-        body: Builder(
-          builder: (context) {
-            final scrollController = PrimaryScrollController.of(context)!;
-
-            // Add listener to load new manga
-            scrollController.addListener(
-              () async {
-                if (scrollController.position.pixels ==
-                    scrollController.position.maxScrollExtent) {
-                  // If more than 10 seconds have passed since last page change, then change the page
-                  if ((DateTime.now().millisecondsSinceEpoch -
-                          _popularTabCurrentPageNumberData.timeStamp) >=
-                      10000) {
-                    log('Getting new page');
-
-                    setState(
-                      () {
-                        _popularTabCurrentPageNumberData.currentNumber++;
-                        _popularTabCurrentPageNumberData.timeStamp =
-                            DateTime.now().millisecondsSinceEpoch;
-                      },
-                    );
-                    _updatePopularManga(_currentSelectedMangaSourceName,
-                        _popularTabCurrentPageNumberData.currentNumber);
-                  } else {
-                    const snackBar = SnackBar(
-                      content: Text('You Are Going too Fast, Slow Down!'),
-                    );
-                    ScaffoldMessenger.of(context).showSnackBar(snackBar);
-                  }
-                }
-              },
-            );
-
-            // Remove top padding from gridView
-            return MediaQuery.removePadding(
-              removeTop: true,
-              context: context,
-              child: _popularTabWidget(scrollController),
-            );
-          },
-        ),
-      ),
+          )),
     );
-  }
-
-  @override
-  void dispose() {
-    _popularTabScrollViewController.dispose();
-    _popularTabScrollViewController.removeListener(() {});
-
-    _updatesTabScrollViewController.dispose();
-    _updatesTabScrollViewController.removeListener(() {});
-
-    super.dispose();
   }
 
   @override
@@ -257,9 +284,6 @@ class _ExploreWidgetState extends State<ExploreWidget>
         _openMainBox().whenComplete(
           () => _getPopularManga(),
         );
-
-        // Get recently updated manga
-        // _getRecentlyUpdatedManga();
       },
     );
   }
@@ -562,7 +586,6 @@ class _ExploreWidgetState extends State<ExploreWidget>
         mainAxisSpacing: 5,
         crossAxisSpacing: 5,
         childAspectRatio: 0.50,
-        physics: const NeverScrollableScrollPhysics(),
         shrinkWrap: true,
         children: _popularManga.map(
           (mangaSearchResult) {
@@ -745,14 +768,15 @@ class _ExploreWidgetState extends State<ExploreWidget>
     }
   }
 
-  Widget _updatesTab() {
+  Widget _updatesTabWidget(ScrollController scrollController) {
     if (_updatesManga.isEmpty) {
+      _getRecentlyUpdatedManga();
       return loadingWidget;
     }
 
     return Scrollbar(
       child: GridView.count(
-        controller: _updatesTabScrollViewController,
+        controller: scrollController,
         crossAxisCount: 2,
         mainAxisSpacing: 5,
         crossAxisSpacing: 5,
