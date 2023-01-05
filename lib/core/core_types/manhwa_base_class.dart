@@ -2,6 +2,9 @@ import 'core_types.dart';
 
 /// Base class that all manhwa sources must implement
 abstract class ManhwaSource {
+  /// Color Scheme of manhwa source
+  MangaSourceTheme get colorScheme;
+
   /// returns chapter image urls from chapterUrl.
   Future<List<String>> getChapterImages(String chapterUrl) async {
     throw UnimplementedError();

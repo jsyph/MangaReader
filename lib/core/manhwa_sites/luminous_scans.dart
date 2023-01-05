@@ -7,8 +7,11 @@ import 'package:web_scraper/web_scraper.dart';
 import '../core_types/core_types.dart';
 
 class LuminousScans implements ManhwaSource {
-  final _webScraper = WebScraper('https://luminousscans.com');
   final _mangaSourceName = 'Luminous Scans';
+  final _webScraper = WebScraper('https://luminousscans.com');
+
+  @override
+  MangaSourceTheme get colorScheme => MangaSourceTheme(0xffbda2ea, 0xffb6b9ff);
 
   @override
   Future<List<String>> getChapterImages(String chapterUrl) async {

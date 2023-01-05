@@ -1,9 +1,9 @@
 import 'package:bottom_navy_bar/bottom_navy_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:manga_reader/content_widgets/search_widget.dart';
+import 'package:manga_reader/content_widgets/search_widget/search_widget.dart';
 
-import 'explore_widget.dart';
+import 'explore_widget/explore_widget.dart';
 import 'home_widget.dart';
 import 'library_widget.dart';
 import 'settings_widget.dart';

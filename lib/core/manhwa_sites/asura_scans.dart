@@ -12,6 +12,8 @@ class AsuraScans implements ManhwaSource {
   final logger = Logger('AsuraScans');
   final _mangaSourceName = 'Asura Scans';
 
+  
+
   @override
   Future<List<String>> getChapterImages(String chapterUrl) async {
     final chapterRoute =
@@ -221,4 +223,7 @@ class AsuraScans implements ManhwaSource {
 
     return [];
   }
+  
+  @override
+  MangaSourceTheme get colorScheme => MangaSourceTheme(0xFF212121, 0xff7334ae);
 }

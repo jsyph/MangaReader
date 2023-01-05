@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer';
 
 import 'package:intl/intl.dart';
 
@@ -13,6 +14,7 @@ String removeExtraWhiteSpaces(String text) {
 String fixStringEncoding(String text) {
   final codeUnits = text.codeUnits;
   try {
+    log(text[35]);
     return const Utf8Decoder().convert(codeUnits);
   } catch (e) {
     final codeUnits = text

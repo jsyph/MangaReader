@@ -48,7 +48,7 @@ class _DisplayChapter extends State<DisplayChapter> {
   @override
   Widget build(BuildContext context) {
     if (chapterImages.isEmpty) {
-      return scaffoldLoadingNoProgressWidget;
+      return const LoadingScaffold();
     }
 
     return Scaffold(

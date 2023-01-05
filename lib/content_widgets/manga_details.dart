@@ -24,12 +24,14 @@ class _DisplayMangaDetails extends State<DisplayMangaDetails> {
 
   void _getMangaDetails() async {
     final output = await widget._mangaSource.getMangaDetails(widget._mangaUrl);
-    setState(
+    if (mounted) {
+      setState(
       () {
         mangaDetails = output;
         mangaChapters = output.chapters;
       },
     );
+    }
   }
 
   @override
@@ -49,7 +51,7 @@ class _DisplayMangaDetails extends State<DisplayMangaDetails> {
     const contentPaddingB = 0.0;
 
     if (mangaDetails.title.isEmpty) {
-      return scaffoldLoadingNoProgressWidget;
+      return const LoadingScaffold();
     }
 
     return Scaffold(
@@ -131,7 +133,7 @@ class _DisplayMangaDetails extends State<DisplayMangaDetails> {
                       ),
                     ),
 
-                    pipeSeparatorWidget,
+                    const PipeSeparatorWidget(),
 
                     // Figure out when to display status
                     () {
@@ -467,10 +469,11 @@ class _DisplayMangaDetails extends State<DisplayMangaDetails> {
   }
 
   MangaChapterData? _previousChapterData(MangaChapterData chapterData) {
-    try {
-      return mangaChapters[mangaChapters.indexOf(chapterData) - 1];
-    } catch (error) {
+    final previousIndex = mangaChapters.indexOf(chapterData) - 1;
+    if (previousIndex == -1) {
       return null;
     }
+
+    return mangaChapters[previousIndex];
   }
 }

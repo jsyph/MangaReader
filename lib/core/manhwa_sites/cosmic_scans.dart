@@ -7,8 +7,11 @@ import 'package:web_scraper/web_scraper.dart';
 import '../core_types/core_types.dart';
 
 class CosmicScans implements ManhwaSource {
-  final _webScraper = WebScraper('https://cosmicscans.com');
   final _mangaSourceName = 'Cosmic Scans';
+  final _webScraper = WebScraper('https://cosmicscans.com');
+
+  @override
+  MangaSourceTheme get colorScheme => MangaSourceTheme(0xff010101, 0xff0126d4);
 
   @override
   Future<List<String>> getChapterImages(String chapterUrl) async {
@@ -130,17 +133,17 @@ class CosmicScans implements ManhwaSource {
   }
 
   @override
-  Future<List<MangaSearchResult>> updates({int page = 1}) async {
-    final targetEndpoint = '/manga/?status=&type=&order=update&page=$page';
-
-    return await _makeSearch(targetEndpoint);
-  }
-
-  @override
   Future<List<MangaSearchResult>> search(String query) async {
     final formattedQuery = query.toLowerCase();
 
     return await _makeSearch('/?s=$formattedQuery');
+  }
+
+  @override
+  Future<List<MangaSearchResult>> updates({int page = 1}) async {
+    final targetEndpoint = '/manga/?status=&type=&order=update&page=$page';
+
+    return await _makeSearch(targetEndpoint);
   }
 
   Future<List<MangaSearchResult>> _makeSearch(String targetEndpoint) async {

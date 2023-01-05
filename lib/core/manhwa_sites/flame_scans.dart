@@ -7,8 +7,11 @@ import 'package:web_scraper/web_scraper.dart';
 import '../core_types/core_types.dart';
 
 class FlameScans implements ManhwaSource {
-  final _webScraper = WebScraper('https://flamescans.org');
   final _mangaSourceName = 'Flame Scans';
+  final _webScraper = WebScraper('https://flamescans.org');
+
+  @override
+  MangaSourceTheme get colorScheme => MangaSourceTheme(0xff020101, 0xffcc142d);
 
   @override
   Future<List<String>> getChapterImages(String chapterUrl) async {
@@ -143,20 +146,21 @@ class FlameScans implements ManhwaSource {
   }
 
   @override
-  Future<List<MangaSearchResult>> updates({int page = 1}) async {
-    final targetEndpoint = '/ygd/series/?status=&type=&order=update&page=$page';
-
-    return await _makeSearch(targetEndpoint);
-  }
-
-  @override
   Future<List<MangaSearchResult>> search(String query) async {
     final formattedQuery = query.toLowerCase();
 
     return await _makeSearch('/ygd/?s=$formattedQuery');
   }
 
+  @override
+  Future<List<MangaSearchResult>> updates({int page = 1}) async {
+    final targetEndpoint = '/ygd/series/?status=&type=&order=update&page=$page';
+
+    return await _makeSearch(targetEndpoint);
+  }
+
   Future<List<MangaSearchResult>> _makeSearch(String targetEndpoint) async {
+    log('https://flamescans.org' + targetEndpoint);
     if (await _webScraper.loadWebPage(targetEndpoint)) {
       // Get cover urls
       final resultCoverUrls = _webScraper.getElementAttributeUnwrapString(
