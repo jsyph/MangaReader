@@ -1,7 +1,6 @@
 import 'package:bottom_navy_bar/bottom_navy_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:manga_reader/content_widgets/search_widget/search_widget.dart';
 
 import 'explore_widget/explore_widget.dart';
 import 'home_widget.dart';
@@ -38,7 +37,6 @@ class _MainWidgetState extends State<MainWidget> {
   final List<Widget> _widgetOptions = [
     const HomeWidget(),
     const ExploreWidget(),
-    const SearchWidget(),
     const LibraryWidget(),
   ];
 
@@ -89,12 +87,6 @@ class _MainWidgetState extends State<MainWidget> {
           BottomNavyBarItem(
             icon: const FaIcon(FontAwesomeIcons.globe),
             title: const Text('Explore'),
-            activeColor: Colors.white,
-            textAlign: TextAlign.center,
-          ),
-          BottomNavyBarItem(
-            icon: const Icon(Icons.search),
-            title: const Text('Search'),
             activeColor: Colors.white,
             textAlign: TextAlign.center,
           ),

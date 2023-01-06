@@ -5,12 +5,11 @@ import 'package:flutter/rendering.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hive/hive.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:http/retry.dart';
 import 'package:manga_reader/content_widgets/common.dart';
 import 'package:manga_reader/content_widgets/explore_widget/popular_tab.dart';
 import 'package:manga_reader/content_widgets/explore_widget/updates_tab.dart';
+import 'package:manga_reader/content_widgets/search_widget/search_widget.dart';
 import 'package:manga_reader/core/core.dart';
-import 'package:flutter/rendering.dart';
 
 import '../../core/database_types/page_data.dart';
 
@@ -43,13 +42,13 @@ class _ExploreWidgetState extends State<ExploreWidget>
         AutomaticKeepAliveClientMixin<ExploreWidget>,
         SingleTickerProviderStateMixin {
   String _currentSelectedMangaSourceName = '';
-  late final TabController _tabController;
+  bool isFABVisible = true;
 
   List<MangaSearchResult> _popularManga = [];
   CurrentChapterNumberData _popularTabCurrentPageNumberData =
       CurrentChapterNumberData.empty();
-  ScrollController _popularTabScrollController = ScrollController();
 
+  late final TabController _tabController;
   List<MangaSearchResult> _updatesManga = [];
   CurrentChapterNumberData _updatesTabCurrentPageNumberData =
       CurrentChapterNumberData.empty();
@@ -302,291 +301,258 @@ class _ExploreWidgetState extends State<ExploreWidget>
       return const LoadingWidget();
     }
 
-    return Scaffold(
-      body: NestedScrollView(
-        floatHeaderSlivers: true,
-        headerSliverBuilder: (context, innerBoxIsScrolled) => [
-          SliverAppBar(
-            snap: true,
-            flexibleSpace: AnimatedContainer(
-              duration: const Duration(seconds: 2),
-              curve: Curves.easeInOut,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    Color(mangaSourcesData[_currentSelectedMangaSourceName]!
-                        .colorScheme
-                        .primaryColor),
-                    Color(mangaSourcesData[_currentSelectedMangaSourceName]!
-                        .colorScheme
-                        .secondaryColor),
-                  ],
-                  begin: const FractionalOffset(0.0, 0.0),
-                  // ignore: prefer_const_constructors
-                  end: FractionalOffset(1.0, 0.0),
-                  stops: const [0.0, 1.0],
-                  tileMode: TileMode.clamp,
+    return NotificationListener<UserScrollNotification>(
+      onNotification: (notification) {
+        if (notification.direction == ScrollDirection.forward) {
+          if (!isFABVisible) setState(() => isFABVisible = true);
+        } else if (notification.direction == ScrollDirection.reverse) {
+          if (isFABVisible) setState(() => isFABVisible = false);
+        }
+
+        return false;
+      },
+      child: Scaffold(
+        body: NestedScrollView(
+          floatHeaderSlivers: true,
+          headerSliverBuilder: (context, innerBoxIsScrolled) => [
+            SliverAppBar(
+              snap: true,
+              flexibleSpace: AnimatedContainer(
+                duration: const Duration(seconds: 2),
+                curve: Curves.easeInOut,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      Color(mangaSourcesData[_currentSelectedMangaSourceName]!
+                          .colorScheme
+                          .primaryColor),
+                      Color(mangaSourcesData[_currentSelectedMangaSourceName]!
+                          .colorScheme
+                          .secondaryColor),
+                    ],
+                    begin: const FractionalOffset(0.0, 0.0),
+                    // ignore: prefer_const_constructors
+                    end: FractionalOffset(1.0, 0.0),
+                    stops: const [0.0, 1.0],
+                    tileMode: TileMode.clamp,
+                  ),
                 ),
               ),
-            ),
-            floating: true,
-            title: const Text('Current Source:'),
-            bottom: TabBar(
-              controller: _tabController,
-              tabs: [
-                Tab(
-                  child: RichText(
-                    text: const TextSpan(
-                      children: [
-                        TextSpan(
-                          text: "Popular",
-                        ),
-                        WidgetSpan(
-                          alignment: PlaceholderAlignment.baseline,
-                          baseline: TextBaseline.alphabetic,
-                          child: SizedBox(width: 10),
-                        ),
-                        WidgetSpan(
-                          child: FaIcon(
-                            FontAwesomeIcons.fire,
-                            size: 16,
-                            color: Colors.redAccent,
+              floating: true,
+              title: const Text('Current Source:'),
+              bottom: TabBar(
+                controller: _tabController,
+                tabs: [
+                  Tab(
+                    child: RichText(
+                      text: const TextSpan(
+                        children: [
+                          TextSpan(
+                            text: "Popular",
                           ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                Tab(
-                  child: RichText(
-                    text: const TextSpan(
-                      children: [
-                        TextSpan(
-                          text: "Updates",
-                        ),
-                        WidgetSpan(
-                          alignment: PlaceholderAlignment.baseline,
-                          baseline: TextBaseline.alphabetic,
-                          child: SizedBox(width: 10),
-                        ),
-                        WidgetSpan(
-                          child: Icon(
-                            Icons.new_releases,
-                            size: 16,
-                            color: Colors.yellowAccent,
+                          WidgetSpan(
+                            alignment: PlaceholderAlignment.baseline,
+                            baseline: TextBaseline.alphabetic,
+                            child: SizedBox(width: 10),
                           ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            actions: [
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                color: Theme.of(context).appBarTheme.backgroundColor,
-
-                // dropdown below..
-                child: DropdownButton<String>(
-                  value: _currentSelectedMangaSourceName,
-                  onChanged: (value) {
-                    if (value != null) {
-                      // 👇 Code to run when selected manga source is changed
-                      log(value);
-                      _changePopularManga(value).then(
-                        (_) => _changeSelectedMangaSourceName(value),
-                      );
-
-                      _changeUpdatesManga(value).then(
-                        (_) => _changeSelectedMangaSourceName(value),
-                      );
-
-                      // 👆 -------------------------------------------------
-                    }
-                  },
-                  items: mangaSourcesData.keys
-                      .map<DropdownMenuItem<String>>(
-                        (String value) => DropdownMenuItem<String>(
-                          value: value,
-                          child: Text(
-                            value,
-                            style: const TextStyle(
-                              fontSize: 18,
-                              fontStyle: FontStyle.italic,
+                          WidgetSpan(
+                            child: FaIcon(
+                              FontAwesomeIcons.fire,
+                              size: 16,
+                              color: Colors.redAccent,
                             ),
                           ),
-                        ),
-                      )
-                      .toList(),
-
-                  // add extra sugar..
-                  icon: const Icon(
-                    Icons.arrow_drop_down,
-                    color: Colors.black,
+                        ],
+                      ),
+                    ),
                   ),
-                  underline: const SizedBox(),
-                ),
-              )
-            ],
-          ),
-        ],
-        body: TabBarView(
-          controller: _tabController,
-          children: [
-            // Builder(
-            //   builder: (scrollContext) {
-            //     final scrollController =
-            //         PrimaryScrollController.of(scrollContext)!;
-
-            //     // Add listener to load new manga
-            //     scrollController.addListener(
-            //       () async {
-            //         if (scrollController.position.pixels ==
-            //             scrollController.position.maxScrollExtent) {
-            //           // If more than 10 seconds have passed since last page change, then change the page
-            //           if ((DateTime.now().millisecondsSinceEpoch -
-            //                   _popularTabCurrentPageNumberData.timeStamp) >=
-            //               5000) {
-            //             log('Getting new page');
-
-            //             setState(
-            //               () {
-            //                 _popularTabCurrentPageNumberData.currentNumber++;
-            //                 _popularTabCurrentPageNumberData.timeStamp =
-            //                     DateTime.now().millisecondsSinceEpoch;
-            //               },
-            //             );
-            //             _updatePopularManga(
-            //               _currentSelectedMangaSourceName,
-            //               _popularTabCurrentPageNumberData.currentNumber,
-            //             );
-            //           } else {
-            //             log('aaaa');
-            //             const snackBar = SnackBar(
-            //               content: Text(
-            //                 'You Are Going too Fast, Slow Down!',
-            //               ),
-            //               duration: Duration(milliseconds: 100),
-            //             );
-            //             ScaffoldMessenger.of(context).showSnackBar(snackBar);
-            //           }
-            //         }
-            //       },
-            //     );
-
-            //     // Remove top padding from gridView
-            //     return MediaQuery.removePadding(
-            //       removeTop: true,
-            //       context: context,
-            //       child: PopularTab(
-            //         _popularManga,
-            //         _currentSelectedMangaSourceName,
-            //         // scrollController,
-            //       ),
-            //     );
-            //   },
-            // ),
-
-            NotificationListener<ScrollEndNotification>(
-              child: MediaQuery.removePadding(
-                removeTop: true,
-                context: context,
-                child: PopularTab(
-                  _popularManga,
-                  _currentSelectedMangaSourceName,
-                  // scrollController,
-                ),
-              ),
-              onNotification: (ScrollNotification scrollNotification) {
-                log((scrollNotification.metrics.pixels ==
-                        scrollNotification.metrics.maxScrollExtent)
-                    .toString());
-
-                if (scrollNotification.metrics.pixels ==
-                    scrollNotification.metrics.maxScrollExtent) {
-                  if ((DateTime.now().millisecondsSinceEpoch -
-                          _popularTabCurrentPageNumberData.timeStamp) >=
-                      10000) {
-                    log('Getting new page');
-
-                    setState(
-                      () {
-                        _popularTabCurrentPageNumberData.currentNumber++;
-                        _popularTabCurrentPageNumberData.timeStamp =
-                            DateTime.now().millisecondsSinceEpoch;
-                      },
-                    );
-                    _updatePopularManga(
-                      _currentSelectedMangaSourceName,
-                      _popularTabCurrentPageNumberData.currentNumber,
-                    );
-                  } else {
-                    log('aaaa');
-                    const snackBar = SnackBar(
-                      content: Text(
-                        'You Are Going too Fast, Slow Down!',
+                  Tab(
+                    child: RichText(
+                      text: const TextSpan(
+                        children: [
+                          TextSpan(
+                            text: "Updates",
+                          ),
+                          WidgetSpan(
+                            alignment: PlaceholderAlignment.baseline,
+                            baseline: TextBaseline.alphabetic,
+                            child: SizedBox(width: 10),
+                          ),
+                          WidgetSpan(
+                            child: Icon(
+                              Icons.new_releases,
+                              size: 16,
+                              color: Colors.yellowAccent,
+                            ),
+                          ),
+                        ],
                       ),
-                      duration: Duration(milliseconds: 100),
-                    );
-                    ScaffoldMessenger.of(context).showSnackBar(snackBar);
-                  }
-                }
-                return false;
-              },
-            ),
-
-            NotificationListener<ScrollEndNotification>(
-              child: MediaQuery.removePadding(
-                removeTop: true,
-                context: context,
-                child: RecentUpdatesTab(
-                  _updatesManga,
-                  _currentSelectedMangaSourceName,
-                  // _popularTabScrollController
-                  // scrollController,
-                ),
+                    ),
+                  ),
+                ],
               ),
-              onNotification: (ScrollNotification scrollNotification) {
-                log((scrollNotification.metrics.pixels ==
-                        scrollNotification.metrics.maxScrollExtent)
-                    .toString());
-
-                if (scrollNotification.metrics.pixels ==
-                    scrollNotification.metrics.maxScrollExtent) {
-                  if ((DateTime.now().millisecondsSinceEpoch -
-                          _updatesTabCurrentPageNumberData.timeStamp) >=
-                      10000) {
-                    log('Getting new page');
-
-                    setState(
-                      () {
-                        _updatesTabCurrentPageNumberData.currentNumber++;
-                        _updatesTabCurrentPageNumberData.timeStamp =
-                            DateTime.now().millisecondsSinceEpoch;
-                      },
-                    );
-                    _updatePopularManga(
-                      _currentSelectedMangaSourceName,
-                      _updatesTabCurrentPageNumberData.currentNumber,
-                    );
-                  } else {
-                    log('aaaa');
-                    const snackBar = SnackBar(
-                      content: Text(
-                        'You Are Going too Fast, Slow Down!',
-                      ),
-                      duration: Duration(milliseconds: 100),
-                    );
-                    ScaffoldMessenger.of(context).showSnackBar(snackBar);
-                  }
-                }
-                return false;
-              },
+              actions: [
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  color: Theme.of(context).appBarTheme.backgroundColor,
+    
+                  // dropdown below..
+                  child: DropdownButton<String>(
+                    value: _currentSelectedMangaSourceName,
+                    onChanged: (value) {
+                      if (value != null) {
+                        // 👇 Code to run when selected manga source is changed
+                        log(value);
+                        _changePopularManga(value).then(
+                          (_) => _changeSelectedMangaSourceName(value),
+                        );
+    
+                        _changeUpdatesManga(value).then(
+                          (_) => _changeSelectedMangaSourceName(value),
+                        );
+    
+                        // 👆 -------------------------------------------------
+                      }
+                    },
+                    items: mangaSourcesData.keys
+                        .map<DropdownMenuItem<String>>(
+                          (String value) => DropdownMenuItem<String>(
+                            value: value,
+                            child: Text(
+                              value,
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontStyle: FontStyle.italic,
+                              ),
+                            ),
+                          ),
+                        )
+                        .toList(),
+    
+                    // add extra sugar..
+                    icon: const Icon(
+                      Icons.arrow_drop_down,
+                      color: Colors.black,
+                    ),
+                    underline: const SizedBox(),
+                  ),
+                )
+              ],
             ),
           ],
+          body: TabBarView(
+            controller: _tabController,
+            children: [
+              NotificationListener<ScrollEndNotification>(
+                child: MediaQuery.removePadding(
+                  removeTop: true,
+                  context: context,
+                  child: PopularTab(
+                    _popularManga,
+                    _currentSelectedMangaSourceName,
+                    // scrollController,
+                  ),
+                ),
+                onNotification: (ScrollNotification scrollNotification) {
+                  log((scrollNotification.metrics.pixels ==
+                          scrollNotification.metrics.maxScrollExtent)
+                      .toString());
+    
+                  if (scrollNotification.metrics.pixels ==
+                      scrollNotification.metrics.maxScrollExtent) {
+                    if ((DateTime.now().millisecondsSinceEpoch -
+                            _popularTabCurrentPageNumberData.timeStamp) >=
+                        10000) {
+                      log('Getting new page');
+    
+                      setState(
+                        () {
+                          _popularTabCurrentPageNumberData.currentNumber++;
+                          _popularTabCurrentPageNumberData.timeStamp =
+                              DateTime.now().millisecondsSinceEpoch;
+                        },
+                      );
+                      _updatePopularManga(
+                        _currentSelectedMangaSourceName,
+                        _popularTabCurrentPageNumberData.currentNumber,
+                      );
+                    } else {
+                      log('aaaa');
+                      const snackBar = SnackBar(
+                        content: Text(
+                          'You Are Going too Fast, Slow Down!',
+                        ),
+                        duration: Duration(milliseconds: 100),
+                      );
+                      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                    }
+                  }
+                  return false;
+                },
+              ),
+              NotificationListener<ScrollEndNotification>(
+                child: MediaQuery.removePadding(
+                  removeTop: true,
+                  context: context,
+                  child: RecentUpdatesTab(
+                    _updatesManga,
+                    _currentSelectedMangaSourceName,
+                    // _popularTabScrollController
+                    // scrollController,
+                  ),
+                ),
+                onNotification: (ScrollNotification scrollNotification) {
+                  log((scrollNotification.metrics.pixels ==
+                          scrollNotification.metrics.maxScrollExtent)
+                      .toString());
+    
+                  if (scrollNotification.metrics.pixels ==
+                      scrollNotification.metrics.maxScrollExtent) {
+                    if ((DateTime.now().millisecondsSinceEpoch -
+                            _updatesTabCurrentPageNumberData.timeStamp) >=
+                        10000) {
+                      log('Getting new page');
+    
+                      setState(
+                        () {
+                          _updatesTabCurrentPageNumberData.currentNumber++;
+                          _updatesTabCurrentPageNumberData.timeStamp =
+                              DateTime.now().millisecondsSinceEpoch;
+                        },
+                      );
+                      _updatePopularManga(
+                        _currentSelectedMangaSourceName,
+                        _updatesTabCurrentPageNumberData.currentNumber,
+                      );
+                    } else {
+                      log('aaaa');
+                      const snackBar = SnackBar(
+                        content: Text(
+                          'You Are Going too Fast, Slow Down!',
+                        ),
+                        duration: Duration(milliseconds: 100),
+                      );
+                      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                    }
+                  }
+                  return false;
+                },
+              ),
+            ],
+          ),
         ),
+        floatingActionButton: isFABVisible
+            ? FloatingActionButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const SearchWidget()),
+                  );
+                },
+                child: const Icon(Icons.search),
+              )
+            : null,
       ),
     );
   }
