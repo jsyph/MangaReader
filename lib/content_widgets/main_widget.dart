@@ -5,7 +5,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'explore_widget/explore_widget.dart';
 import 'home_widget.dart';
 import 'library_widget.dart';
-import 'settings_widget.dart';
+import 'settings_wdiget.dart';
 
 class MainWidget extends StatefulWidget {
   const MainWidget({super.key});
@@ -30,7 +30,7 @@ class MangaReaderApp extends StatelessWidget {
 }
 
 class _MainWidgetState extends State<MainWidget> {
-  final _animationDuration = const Duration(milliseconds: 300);
+  final _animationDuration = const Duration(milliseconds: 400);
   int _currentIndex = 0;
   final _curveAnimation = Curves.easeOutCubic;
   final _pageController = PageController();
@@ -38,6 +38,7 @@ class _MainWidgetState extends State<MainWidget> {
     const HomeWidget(),
     const ExploreWidget(),
     const LibraryWidget(),
+    const SettingsWidget(),
   ];
 
   @override
@@ -64,6 +65,7 @@ class _MainWidgetState extends State<MainWidget> {
         ),
       ),
       bottomNavigationBar: BottomNavyBar(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         selectedIndex: _currentIndex,
         showElevation: true,
         itemCornerRadius: 30,
@@ -71,10 +73,8 @@ class _MainWidgetState extends State<MainWidget> {
         animationDuration: _animationDuration,
         onItemSelected: (index) {
           setState(() => _currentIndex = index);
-          _pageController.animateToPage(
+          _pageController.jumpToPage(
             index,
-            duration: _animationDuration,
-            curve: _curveAnimation,
           );
         },
         items: [
@@ -93,6 +93,12 @@ class _MainWidgetState extends State<MainWidget> {
           BottomNavyBarItem(
             icon: const Icon(Icons.collections_bookmark),
             title: const Text('Library'),
+            activeColor: Colors.white,
+            textAlign: TextAlign.center,
+          ),
+          BottomNavyBarItem(
+            icon: const Icon(Icons.settings),
+            title: const Text('Settings'),
             activeColor: Colors.white,
             textAlign: TextAlign.center,
           ),

@@ -15,6 +15,9 @@ class DataBasePageData {
   @HiveField(2)
   final List<MangaSearchResult> results;
 
-
-  DataBasePageData(this.page, this.time, this.results);
+  DataBasePageData(
+    this.page,
+    this.time,
+    this.results,
+  );
 }

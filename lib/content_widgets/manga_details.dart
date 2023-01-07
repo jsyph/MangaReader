@@ -10,29 +10,18 @@ import 'package:manga_reader/core/utils.dart';
 import 'package:readmore/readmore.dart';
 
 class DisplayMangaDetails extends StatefulWidget {
-  final String _mangaUrl;
-  final ManhwaSource _mangaSource;
   const DisplayMangaDetails(this._mangaUrl, this._mangaSource, {super.key});
+
+  final ManhwaSource _mangaSource;
+  final String _mangaUrl;
 
   @override
   State<DisplayMangaDetails> createState() => _DisplayMangaDetails();
 }
 
 class _DisplayMangaDetails extends State<DisplayMangaDetails> {
-  MangaDetails mangaDetails = MangaDetails.empty();
   List<MangaChapterData> mangaChapters = [];
-
-  void _getMangaDetails() async {
-    final output = await widget._mangaSource.getMangaDetails(widget._mangaUrl);
-    if (mounted) {
-      setState(
-      () {
-        mangaDetails = output;
-        mangaChapters = output.chapters;
-      },
-    );
-    }
-  }
+  MangaDetails mangaDetails = MangaDetails.empty();
 
   @override
   void initState() {
@@ -43,6 +32,18 @@ class _DisplayMangaDetails extends State<DisplayMangaDetails> {
         _getMangaDetails();
       },
     );
+  }
+
+  void _getMangaDetails() async {
+    final output = await widget._mangaSource.getMangaDetails(widget._mangaUrl);
+    if (mounted) {
+      setState(
+        () {
+          mangaDetails = output;
+          mangaChapters = output.chapters;
+        },
+      );
+    }
   }
 
   @override
@@ -136,65 +137,7 @@ class _DisplayMangaDetails extends State<DisplayMangaDetails> {
                     const PipeSeparatorWidget(),
 
                     // Figure out when to display status
-                    () {
-                      Widget mangaStatusTextWidget = const Text('');
-                      switch (mangaDetails.status) {
-                        case MangaStatus.ongoing:
-                          {
-                            mangaStatusTextWidget = const Text(
-                              'Ongoing',
-                              style: TextStyle(
-                                color: Colors.green,
-                                fontStyle: FontStyle.italic,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            );
-                            break;
-                          }
-                        case MangaStatus.hiatus:
-                          {
-                            mangaStatusTextWidget = const Text(
-                              'Hiatus',
-                              style: TextStyle(
-                                color: Colors.orange,
-                                fontStyle: FontStyle.italic,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            );
-                            break;
-                          }
-                        case MangaStatus.completed:
-                          {
-                            mangaStatusTextWidget = const Text(
-                              'Completed',
-                              style: TextStyle(
-                                color: Colors.blue,
-                                fontStyle: FontStyle.italic,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            );
-                            break;
-                          }
-                        case MangaStatus.cancelled:
-                          {
-                            mangaStatusTextWidget = const Text(
-                              'Cancelled',
-                              style: TextStyle(
-                                color: Colors.red,
-                                fontStyle: FontStyle.italic,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            );
-                            break;
-                          }
-
-                        default:
-                          {
-                            break;
-                          }
-                      }
-                      return mangaStatusTextWidget;
-                    }(),
+                    _MangaStatusWidget(mangaDetails),
                   ],
                 ),
 
@@ -212,22 +155,7 @@ class _DisplayMangaDetails extends State<DisplayMangaDetails> {
                       ),
                     ),
                     const Divider(),
-                    ReadMoreText(
-                      () {
-                        if (mangaDetails.description == null) {
-                          return 'No Description';
-                        }
-
-                        return mangaDetails.description!;
-                      }(),
-                      textAlign: TextAlign.justify,
-                      trimCollapsedText: ' Show More',
-                      trimExpandedText: ' Show Less',
-                      moreStyle: const TextStyle(
-                        color: Colors.purpleAccent,
-                      ),
-                      lessStyle: const TextStyle(color: Colors.purpleAccent),
-                    ),
+                    _MangaDescriptionWidget(mangaDetails),
                   ],
                 ),
 
@@ -282,21 +210,14 @@ class _DisplayMangaDetails extends State<DisplayMangaDetails> {
                           child: SizedBox(
                             height: 70,
                             child: ElevatedButton(
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.deepPurpleAccent,
-                                ),
-                                // TODO: Create function
-                                onPressed: () {},
-                                child: () {
-                                  if (mangaDetails.chapters.isEmpty) {
-                                    return const Text('No Latest Chapter');
-                                  }
-
-                                  return Text(
-                                    'Read Latest Chapter ${mangaDetails.chapters.first.chapterTitle}',
-                                    textAlign: TextAlign.center,
-                                  );
-                                }()),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.deepPurpleAccent,
+                              ),
+                              // TODO: Create function
+                              onPressed: () {},
+                              child:
+                                  _LatestChapterButtonChildWidget(mangaDetails),
+                            ),
                           ),
                         ),
                       ],
@@ -321,7 +242,6 @@ class _DisplayMangaDetails extends State<DisplayMangaDetails> {
                               // else display chapters widget
                               return Scrollbar(
                                 child: GridView.count(
-                                  primary: true,
                                   crossAxisCount: 2,
                                   shrinkWrap: true,
                                   mainAxisSpacing: 4.0,
@@ -339,11 +259,8 @@ class _DisplayMangaDetails extends State<DisplayMangaDetails> {
                                                   builder: (context) {
                                                     return DisplayChapter(
                                                       chapterData,
+                                                      mangaChapters,
                                                       widget._mangaSource,
-                                                      _previousChapterData(
-                                                          chapterData),
-                                                      _nextChapterData(
-                                                          chapterData),
                                                     );
                                                   },
                                                 ),
@@ -459,21 +376,115 @@ class _DisplayMangaDetails extends State<DisplayMangaDetails> {
       ),
     );
   }
+}
 
-  MangaChapterData? _nextChapterData(MangaChapterData chapterData) {
-    try {
-      return mangaChapters[mangaChapters.indexOf(chapterData) + 1];
-    } catch (error) {
-      return null;
+class _MangaStatusWidget extends StatelessWidget {
+  const _MangaStatusWidget(this._mangaDetails);
+
+  final MangaDetails _mangaDetails;
+
+  @override
+  Widget build(BuildContext context) {
+    Widget mangaStatusTextWidget = const Text('');
+    switch (_mangaDetails.status) {
+      case MangaStatus.ongoing:
+        {
+          mangaStatusTextWidget = const Text(
+            'Ongoing',
+            style: TextStyle(
+              color: Colors.green,
+              fontStyle: FontStyle.italic,
+              fontWeight: FontWeight.bold,
+            ),
+          );
+          break;
+        }
+      case MangaStatus.hiatus:
+        {
+          mangaStatusTextWidget = const Text(
+            'Hiatus',
+            style: TextStyle(
+              color: Colors.orange,
+              fontStyle: FontStyle.italic,
+              fontWeight: FontWeight.bold,
+            ),
+          );
+          break;
+        }
+      case MangaStatus.completed:
+        {
+          mangaStatusTextWidget = const Text(
+            'Completed',
+            style: TextStyle(
+              color: Colors.blue,
+              fontStyle: FontStyle.italic,
+              fontWeight: FontWeight.bold,
+            ),
+          );
+          break;
+        }
+      case MangaStatus.cancelled:
+        {
+          mangaStatusTextWidget = const Text(
+            'Cancelled',
+            style: TextStyle(
+              color: Colors.red,
+              fontStyle: FontStyle.italic,
+              fontWeight: FontWeight.bold,
+            ),
+          );
+          break;
+        }
+
+      default:
+        {
+          break;
+        }
     }
+    return mangaStatusTextWidget;
   }
+}
 
-  MangaChapterData? _previousChapterData(MangaChapterData chapterData) {
-    final previousIndex = mangaChapters.indexOf(chapterData) - 1;
-    if (previousIndex == -1) {
-      return null;
+class _MangaDescriptionWidget extends StatelessWidget {
+  const _MangaDescriptionWidget(this._mangaDetails);
+
+  final MangaDetails _mangaDetails;
+
+  @override
+  Widget build(BuildContext context) {
+    return ReadMoreText(
+      () {
+        if (_mangaDetails.description == null) {
+          return 'No Description';
+        }
+
+        return _mangaDetails.description!;
+      }(),
+      textAlign: TextAlign.justify,
+      trimCollapsedText: ' Show More',
+      trimExpandedText: ' Show Less',
+      moreStyle: const TextStyle(
+        color: Colors.purpleAccent,
+      ),
+      lessStyle: const TextStyle(color: Colors.purpleAccent),
+    );
+  }
+}
+
+class _LatestChapterButtonChildWidget extends StatelessWidget {
+  const _LatestChapterButtonChildWidget(this._mangaDetails);
+
+  final MangaDetails _mangaDetails;
+
+  @override
+  Widget build(BuildContext context) {
+    if (_mangaDetails.chapters.isEmpty) {
+      return const Text('No Latest Chapter');
     }
 
-    return mangaChapters[previousIndex];
+    return Text(
+      'Read Latest Chapter ${_mangaDetails.chapters.first.chapterTitle}',
+      textAlign: TextAlign.center,
+    );
   }
 }

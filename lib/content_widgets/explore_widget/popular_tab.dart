@@ -9,8 +9,7 @@ class PopularTab extends StatelessWidget {
   final List<MangaSearchResult> _popularManga;
   final String _mangaSourceName;
 
-  const PopularTab(this._popularManga, this._mangaSourceName,
-      {super.key});
+  const PopularTab(this._popularManga, this._mangaSourceName, {super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -44,8 +43,9 @@ class PopularTab extends StatelessWidget {
                       context,
                       MaterialPageRoute(
                         builder: (context) => DisplayMangaDetails(
-                            mangaSearchResult.mangaUrl,
-                            mangaSourcesData[_mangaSourceName]!),
+                          mangaSearchResult.mangaUrl,
+                          mangaSourcesData[_mangaSourceName]!,
+                        ),
                       ),
                     );
                   },

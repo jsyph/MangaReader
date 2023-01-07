@@ -1,4 +1,8 @@
+import 'package:hive/hive.dart';
+
 import 'core_types.dart';
+
+part '../database_types/generated/manga_detail.g.dart';
 
 /// Contains the manga details:
 /// - __title__: (*String*) manga tile
@@ -9,31 +13,51 @@ import 'core_types.dart';
 /// - __followedByCount__: (*int*) number of followers to the manga series
 /// - __yearReleased__: (*int*) year the manga was released
 /// - __chapters__: (*List<MangaChapterData>*) chapters of the manga
+@HiveType(typeId: 5)
 class MangaDetails {
+  @HiveField(0)
   final String title;
+
+  @HiveField(1)
   final String? description;
+
+  @HiveField(2)
   final String coverUrl;
+
+  @HiveField(3)
   final MangaStatus status;
+
+  @HiveField(4)
   final double rating;
+
+  @HiveField(5)
   final DateTime releasedAt;
+
+  @HiveField(6)
   final List<String> tags;
+
+  @HiveField(7)
   final MangaContentType contentType;
+
+  @HiveField(8)
   final String mangaSourceName;
 
   /// sorted in descending order
+  @HiveField(9)
   final List<MangaChapterData> chapters;
 
   MangaDetails(
-      this.title,
-      this.description,
-      this.coverUrl,
-      this.rating,
-      this.status,
-      this.releasedAt,
-      this.chapters,
-      this.tags,
-      this.contentType,
-      this.mangaSourceName);
+    this.title,
+    this.description,
+    this.coverUrl,
+    this.rating,
+    this.status,
+    this.releasedAt,
+    this.chapters,
+    this.tags,
+    this.contentType,
+    this.mangaSourceName,
+  );
 
   @override
   String toString() {

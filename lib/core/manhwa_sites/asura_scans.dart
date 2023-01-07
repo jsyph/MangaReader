@@ -1,6 +1,8 @@
 import 'dart:developer';
 
+import 'package:http/retry.dart';
 import 'package:logging/logging.dart';
+import 'package:manga_reader/core/manhwa_sites/helper_functions.dart';
 import 'package:manga_reader/core/utils.dart';
 import 'package:manga_reader/core/webscraper_extension.dart';
 import 'package:web_scraper/web_scraper.dart';
@@ -8,11 +10,13 @@ import 'package:web_scraper/web_scraper.dart';
 import '../core_types/core_types.dart';
 
 class AsuraScans implements ManhwaSource {
-  final _webScraper = WebScraper('https://asura.gg');
   final logger = Logger('AsuraScans');
-  final _mangaSourceName = 'Asura Scans';
 
-  
+  final _mangaSourceName = 'Asura Scans';
+  final _webScraper = WebScraper('https://asura.gg');
+
+  @override
+  MangaSourceTheme get colorScheme => MangaSourceTheme(0xFF212121, 0xff7334ae);
 
   @override
   Future<List<String>> getChapterImages(String chapterUrl) async {
@@ -114,6 +118,8 @@ class AsuraScans implements ManhwaSource {
             mangaChapterReleasedOns[i],
             mangaChapterUrls[i],
             _mangaSourceName,
+            previousMangaChapterUrl(i, mangaChapterUrls),
+            nextMangaChapterUrl(i, mangaChapterUrls),
           ),
         );
       }
@@ -223,7 +229,4 @@ class AsuraScans implements ManhwaSource {
 
     return [];
   }
-  
-  @override
-  MangaSourceTheme get colorScheme => MangaSourceTheme(0xFF212121, 0xff7334ae);
 }

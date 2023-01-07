@@ -1,5 +1,6 @@
 import 'dart:developer';
 
+import 'package:manga_reader/core/manhwa_sites/helper_functions.dart';
 import 'package:manga_reader/core/utils.dart';
 import 'package:manga_reader/core/webscraper_extension.dart';
 import 'package:web_scraper/web_scraper.dart';
@@ -103,6 +104,8 @@ class CosmicScans implements ManhwaSource {
             mangaChapterDates[i],
             mangaChapterUrls[i],
             _mangaSourceName,
+            previousMangaChapterUrl(i, mangaChapterUrls),
+            nextMangaChapterUrl(i, mangaChapterUrls),
           ),
         );
       }

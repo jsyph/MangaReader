@@ -1,5 +1,6 @@
 import 'dart:developer';
 
+import 'package:manga_reader/core/manhwa_sites/helper_functions.dart';
 import 'package:manga_reader/core/utils.dart';
 import 'package:manga_reader/core/webscraper_extension.dart';
 import 'package:web_scraper/web_scraper.dart';
@@ -115,6 +116,8 @@ class LuminousScans implements ManhwaSource {
             chapterReleasedOn[i],
             chapterUrls[i],
             _mangaSourceName,
+            previousMangaChapterUrl(i, chapterUrls),
+            nextMangaChapterUrl(i, chapterUrls),
           ),
         );
       }
@@ -213,15 +216,14 @@ class LuminousScans implements ManhwaSource {
         if (!mangaTitles[i].contains('(Novel)')) {
           results.add(
             MangaSearchResult(
-              coverUrls[i],
-              mangaTitles[i],
-              latestChapterTitles[i],
-              ratings[i],
-              mangaUrls[i],
-              MangaStatus.none,
-              mangaContentTypes[i],
-              _mangaSourceName
-            ),
+                coverUrls[i],
+                mangaTitles[i],
+                latestChapterTitles[i],
+                ratings[i],
+                mangaUrls[i],
+                MangaStatus.none,
+                mangaContentTypes[i],
+                _mangaSourceName),
           );
         } else {
           mangaContentTypes.insert(i, MangaContentType.none);
