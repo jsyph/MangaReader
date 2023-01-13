@@ -1,4 +1,4 @@
-# This app has became slow and too comlicated. Will be redone using BLOC architecture
+# This app has became slow and too complicated. Will be redone using BLOC architecture
 
 # Manga Reader
 
