@@ -1,3 +1,5 @@
+# This app has became slow and too comlicated. Will be redone using BLOC architecture
+
 # Manga Reader
 
 ## Sources:
